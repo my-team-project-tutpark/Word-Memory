@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Word Memory - 영어 단어 암기 서비스</title>
+    <title>Word Memory</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <style>
@@ -12,15 +12,9 @@
         }
 
         @keyframes correctPop {
-            0% {
-                transform: scale(1);
-            }
-            40% {
-                transform: scale(1.06);
-            }
-            100% {
-                transform: scale(1);
-            }
+            0% { transform: scale(1); }
+            40% { transform: scale(1.06); }
+            100% { transform: scale(1); }
         }
 
         .correct-effect {
@@ -39,9 +33,7 @@
                 opacity: 0;
                 transform: translateX(-50%) translateY(20px) scale(0.8);
             }
-            30% {
-                opacity: 1;
-            }
+            30% { opacity: 1; }
             100% {
                 opacity: 0;
                 transform: translateX(-50%) translateY(-40px) scale(1.2);
@@ -49,41 +41,147 @@
         }
     </style>
 </head>
+
 <body class="bg-gray-50 text-gray-800 min-h-screen">
 
     <nav class="bg-indigo-600 text-white shadow-md">
-        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
-            <h1 class="text-xl font-bold tracking-wide">🧠 Word Memory</h1>
-            <div class="space-x-2">
-                <button onclick="switchTab('quiz')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700 transition font-medium">퀴즈 풀기</button>
-                <button onclick="switchTab('words')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700 transition font-medium">저장된 단어</button>
-                <button onclick="switchTab('wrong')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700 transition font-medium">오답 노트</button>
-                <button onclick="switchTab('add')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700 transition font-medium">단어 등록</button>
-                <button onclick="switchTab('bulk')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700 transition font-medium">대량 등록</button>
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-3">
+            <h1 class="text-xl font-bold">🧠 Word Memory</h1>
+
+            <div class="space-x-2 text-sm">
+                <button onclick="switchTab('sets')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">세트 선택</button>
+                <button onclick="switchTab('quiz')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">퀴즈</button>
+                <button onclick="switchTab('words')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">단어 목록</button>
+                <button onclick="switchTab('wrong')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">오답 노트</button>
+                <button onclick="switchTab('add')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">단어 등록</button>
+                <button onclick="switchTab('bulk')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">대량 등록</button>
+                <button onclick="switchTab('auth')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">로그인</button>
             </div>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-4 py-8">
+    <main class="max-w-6xl mx-auto px-4 py-8">
 
-        <section id="tab-quiz" class="tab-content">
+        <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 mb-6 flex flex-wrap justify-between items-center gap-3">
+            <div>
+                <p class="text-sm text-gray-500">현재 사용자</p>
+                <p id="login-status" class="font-bold text-gray-900">비회원</p>
+            </div>
+
+            <div>
+                <p class="text-sm text-gray-500">현재 세트</p>
+                <p id="current-set-status" class="font-bold text-indigo-600">선택된 세트 없음</p>
+            </div>
+
+            <div class="flex gap-2 items-center">
+                <input id="global-admin-code" type="password" placeholder="관리자 코드"
+                       class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                <button onclick="saveAdminCode()" class="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm">
+                    관리자 코드 저장
+                </button>
+                <button onclick="logout()" class="bg-red-500 text-white px-3 py-2 rounded-lg text-sm">
+                    로그아웃
+                </button>
+            </div>
+        </div>
+
+        <section id="tab-auth" class="tab-content hidden">
+            <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold mb-4">로그인</h2>
+
+                    <div class="space-y-3">
+                        <input id="login-username" class="w-full px-3 py-2 border rounded-lg" placeholder="아이디">
+                        <input id="login-password" type="password" class="w-full px-3 py-2 border rounded-lg" placeholder="비밀번호">
+
+                        <button onclick="login()" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold">
+                            로그인
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold mb-4">회원가입</h2>
+
+                    <div class="space-y-3">
+                        <input id="signup-username" class="w-full px-3 py-2 border rounded-lg" placeholder="아이디">
+                        <input id="signup-password" type="password" class="w-full px-3 py-2 border rounded-lg" placeholder="비밀번호">
+                        <input id="signup-admin-code" type="password" class="w-full px-3 py-2 border rounded-lg" placeholder="관리자 코드 있으면 입력">
+
+                        <button onclick="signup()" class="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold">
+                            회원가입
+                        </button>
+
+                        <p class="text-xs text-gray-500">
+                            관리자 코드를 넣고 가입하면 관리자 계정으로 가입됩니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-sets" class="tab-content">
+            <div class="grid lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">📚 단어 세트 선택</h2>
+                        <button onclick="fetchSets()" class="bg-gray-100 px-3 py-2 rounded-lg text-sm">
+                            새로고침
+                        </button>
+                    </div>
+
+                    <div id="sets-list" class="grid md:grid-cols-2 gap-4"></div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h2 class="text-xl font-bold mb-4">➕ 세트 만들기</h2>
+
+                    <div class="space-y-3">
+                        <input id="set-title" class="w-full px-3 py-2 border rounded-lg" placeholder="세트 이름">
+                        <textarea id="set-description" class="w-full px-3 py-2 border rounded-lg" rows="3" placeholder="세트 설명"></textarea>
+
+                        <select id="set-visibility" class="w-full px-3 py-2 border rounded-lg bg-white" onchange="toggleSetPassword()">
+                            <option value="public">공개</option>
+                            <option value="private">비공개</option>
+                        </select>
+
+                        <input id="set-password" type="password" class="w-full px-3 py-2 border rounded-lg hidden" placeholder="비공개 세트 암호">
+
+                        <label class="flex items-center gap-2 text-sm">
+                            <input id="set-admin-check" type="checkbox">
+                            관리자 기본 세트로 만들기
+                        </label>
+
+                        <button onclick="createSet()" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold">
+                            세트 생성
+                        </button>
+
+                        <p class="text-xs text-gray-500">
+                            비회원은 관리자 기본 세트만 사용할 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="tab-quiz" class="tab-content hidden">
             <div id="quiz-card" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center max-w-md mx-auto">
                 <span id="quiz-pos" class="text-xs font-semibold uppercase tracking-wider bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full">-</span>
 
-                <h2 id="quiz-word" class="text-4xl font-extrabold text-gray-900 mt-4 mb-2">단어를 등록해주세요</h2>
+                <h2 id="quiz-word" class="text-4xl font-extrabold text-gray-900 mt-4 mb-2">세트를 선택해주세요</h2>
 
-                <p id="quiz-example" class="text-sm text-gray-500 italic mb-2">등록된 단어가 없으면 퀴즈를 풀 수 없습니다.</p>
+                <p id="quiz-example" class="text-sm text-gray-500 italic mb-2">세트 선택 탭에서 단어 세트를 먼저 선택하세요.</p>
                 <p id="quiz-example-meaning" class="text-sm text-gray-500 mb-6"></p>
 
                 <div class="space-y-3">
                     <input type="text" id="user-answer" placeholder="뜻을 입력하세요"
                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-center text-lg">
 
-                    <button id="submit-btn" onclick="submitAnswer()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition shadow-sm">
+                    <button id="submit-btn" onclick="submitAnswer()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700">
                         정답 확인
                     </button>
 
-                    <button onclick="fetchRandomQuiz()" class="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold hover:bg-gray-200 transition">
+                    <button onclick="fetchRandomQuiz()" class="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold hover:bg-gray-200">
                         다음 단어
                     </button>
                 </div>
@@ -98,22 +196,15 @@
 
         <section id="tab-words" class="tab-content hidden">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-xl font-bold mb-4 text-gray-900 flex items-center gap-2">
-                    📚 저장된 단어
+                <h2 class="text-xl font-bold mb-4">
+                    저장된 단어
                     <span id="words-count-badge" class="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">0</span>
                 </h2>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">삭제용 관리자 코드</label>
-                    <input type="password" id="delete-admin-code"
-                           class="w-full max-w-xs px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                           placeholder="관리자 코드 입력">
-                </div>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-gray-200 text-gray-400 text-sm font-medium">
+                            <tr class="border-b text-gray-400 text-sm">
                                 <th class="py-3 px-2">단어</th>
                                 <th class="py-3 px-2">품사</th>
                                 <th class="py-3 px-2">뜻</th>
@@ -130,15 +221,15 @@
 
         <section id="tab-wrong" class="tab-content hidden">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h2 class="text-xl font-bold mb-4 text-gray-900 flex items-center gap-2">
-                    ❌ 오답 노트
+                <h2 class="text-xl font-bold mb-4">
+                    오답 노트
                     <span id="wrong-count-badge" class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">0</span>
                 </h2>
 
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="border-b border-gray-200 text-gray-400 text-sm font-medium">
+                            <tr class="border-b text-gray-400 text-sm">
                                 <th class="py-3 px-2">단어</th>
                                 <th class="py-3 px-2">품사</th>
                                 <th class="py-3 px-2">정답 뜻</th>
@@ -154,46 +245,24 @@
 
         <section id="tab-add" class="tab-content hidden">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-md mx-auto">
-                <h2 class="text-xl font-bold mb-6 text-gray-900">➕ 새 단어 추가</h2>
+                <h2 class="text-xl font-bold mb-6">➕ 새 단어 추가</h2>
 
                 <form id="word-form" onsubmit="saveWord(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">단어 (Word)</label>
-                        <input type="text" id="form-word" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="예: apple">
-                    </div>
+                    <input type="text" id="form-word" required class="w-full px-3 py-2 border rounded-lg" placeholder="단어">
+                    <input type="text" id="form-meaning" required class="w-full px-3 py-2 border rounded-lg" placeholder="뜻">
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">뜻 (Meaning)</label>
-                        <input type="text" id="form-meaning" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="예: 사과">
-                    </div>
+                    <select id="form-pos" class="w-full px-3 py-2 border rounded-lg bg-white">
+                        <option value="Noun">명사</option>
+                        <option value="Verb">동사</option>
+                        <option value="Adjective">형용사</option>
+                        <option value="Adverb">부사</option>
+                    </select>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">품사 (Part of Speech)</label>
-                        <select id="form-pos" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
-                            <option value="Noun">명사 (Noun)</option>
-                            <option value="Verb">동사 (Verb)</option>
-                            <option value="Adjective">형용사 (Adjective)</option>
-                            <option value="Adverb">부사 (Adverb)</option>
-                        </select>
-                    </div>
+                    <textarea id="form-example" rows="2" class="w-full px-3 py-2 border rounded-lg" placeholder="예문"></textarea>
+                    <textarea id="form-example-meaning" rows="2" class="w-full px-3 py-2 border rounded-lg" placeholder="예문 뜻"></textarea>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">예문 (Example Sentence)</label>
-                        <textarea id="form-example" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="예: I eat an apple."></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">예문 뜻</label>
-                        <textarea id="form-example-meaning" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="예: 나는 사과를 먹는다."></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">관리자 코드</label>
-                        <input type="password" id="form-admin-code" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="관리자 코드 입력">
-                    </div>
-
-                    <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition">
-                        단어장에 저장하기
+                    <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold">
+                        단어 저장
                     </button>
                 </form>
             </div>
@@ -201,29 +270,18 @@
 
         <section id="tab-bulk" class="tab-content hidden">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto">
-                <h2 class="text-xl font-bold mb-4 text-gray-900">📋 단어 대량 등록</h2>
+                <h2 class="text-xl font-bold mb-4">📋 단어 대량 등록</h2>
 
                 <p class="text-sm text-gray-500 mb-3">
-                    한 줄에 하나씩 입력하세요. 형식: 단어 | 뜻 | 예문 | 예문 뜻
+                    형식: 단어 | 뜻 | 예문 | 예문 뜻
                 </p>
 
-                <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 text-xs text-gray-500 mb-4">
-                    예시<br>
-                    apple | 사과 | I eat an apple. | 나는 사과를 먹는다.<br>
-                    study | 공부하다 | I study English. | 나는 영어를 공부한다.
-                </div>
-
                 <textarea id="bulk-input" rows="10"
-                          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-sm"
+                          class="w-full px-4 py-3 border rounded-xl"
                           placeholder="apple | 사과 | I eat an apple. | 나는 사과를 먹는다."></textarea>
 
-                <div class="mt-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">관리자 코드</label>
-                    <input type="password" id="bulk-admin-code" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="관리자 코드 입력">
-                </div>
-
-                <button onclick="saveBulkWords()" class="mt-4 w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition">
-                    여러 단어 한 번에 저장하기
+                <button onclick="saveBulkWords()" class="mt-4 w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold">
+                    여러 단어 저장
                 </button>
 
                 <div id="bulk-result" class="mt-4 p-3 rounded-xl text-sm font-medium hidden"></div>
@@ -234,6 +292,40 @@
 
     <script>
         let currentQuizWord = null;
+        let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
+        let currentSet = JSON.parse(localStorage.getItem("currentSet")) || null;
+        let adminCode = localStorage.getItem("adminCode") || "";
+        let unlockedSetPasswords = JSON.parse(localStorage.getItem("unlockedSetPasswords")) || {};
+
+        document.getElementById("global-admin-code").value = adminCode;
+
+        function getUserId() {
+            return currentUser ? currentUser.user_id : "";
+        }
+
+        function getSetPassword() {
+            if (!currentSet) return "";
+            return unlockedSetPasswords[currentSet.set_id] || "";
+        }
+
+        function updateStatus() {
+            const loginStatus = document.getElementById("login-status");
+            const setStatus = document.getElementById("current-set-status");
+
+            if (currentUser) {
+                loginStatus.innerText = `${currentUser.username} (${currentUser.role})`;
+            } else if (adminCode) {
+                loginStatus.innerText = "비회원 + 관리자 코드 사용 중";
+            } else {
+                loginStatus.innerText = "비회원";
+            }
+
+            if (currentSet) {
+                setStatus.innerText = `${currentSet.title}`;
+            } else {
+                setStatus.innerText = "선택된 세트 없음";
+            }
+        }
 
         function switchTab(tabName) {
             document.querySelectorAll(".tab-content").forEach(el => {
@@ -242,9 +334,212 @@
 
             document.getElementById(`tab-${tabName}`).classList.remove("hidden");
 
+            if (tabName === "sets") fetchSets();
             if (tabName === "quiz") fetchRandomQuiz();
             if (tabName === "words") fetchSavedWords();
             if (tabName === "wrong") fetchWrongNotes();
+        }
+
+        function toggleSetPassword() {
+            const visibility = document.getElementById("set-visibility").value;
+            const passwordInput = document.getElementById("set-password");
+
+            if (visibility === "private") {
+                passwordInput.classList.remove("hidden");
+            } else {
+                passwordInput.classList.add("hidden");
+            }
+        }
+
+        function saveAdminCode() {
+            adminCode = document.getElementById("global-admin-code").value.trim();
+            localStorage.setItem("adminCode", adminCode);
+            updateStatus();
+            fetchSets();
+            alert("관리자 코드가 저장되었습니다.");
+        }
+
+        function logout() {
+            currentUser = null;
+            currentSet = null;
+            localStorage.removeItem("currentUser");
+            localStorage.removeItem("currentSet");
+            updateStatus();
+            fetchSets();
+            alert("로그아웃되었습니다.");
+        }
+
+        async function signup() {
+            const username = document.getElementById("signup-username").value.trim();
+            const password = document.getElementById("signup-password").value.trim();
+            const signupAdminCode = document.getElementById("signup-admin-code").value.trim();
+
+            const response = await fetch("/api/signup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username,
+                    password,
+                    admin_code: signupAdminCode
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.error || "회원가입 실패");
+                return;
+            }
+
+            currentUser = result.user;
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+            updateStatus();
+            fetchSets();
+            alert("회원가입 성공!");
+            switchTab("sets");
+        }
+
+        async function login() {
+            const username = document.getElementById("login-username").value.trim();
+            const password = document.getElementById("login-password").value.trim();
+
+            const response = await fetch("/api/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.error || "로그인 실패");
+                return;
+            }
+
+            currentUser = result.user;
+            localStorage.setItem("currentUser", JSON.stringify(currentUser));
+            updateStatus();
+            fetchSets();
+            alert("로그인 성공!");
+            switchTab("sets");
+        }
+
+        async function fetchSets() {
+            const isGuest = currentUser ? "false" : "true";
+
+            const url = `/api/sets?user_id=${getUserId()}&admin_code=${encodeURIComponent(adminCode)}&guest=${isGuest}`;
+
+            const response = await fetch(url);
+            const sets = await response.json();
+
+            const list = document.getElementById("sets-list");
+            list.innerHTML = "";
+
+            if (sets.length === 0) {
+                list.innerHTML = `<p class="text-gray-400">사용 가능한 세트가 없습니다.</p>`;
+                return;
+            }
+
+            sets.forEach(setInfo => {
+                const owner = setInfo.owner_name || "관리자";
+                const visibilityText = setInfo.visibility === "private" ? "🔒 비공개" : "🌍 공개";
+                const adminSetText = setInfo.is_admin_set ? "⭐ 관리자 기본 세트" : "";
+
+                list.innerHTML += `
+                    <div class="border border-gray-200 rounded-xl p-4 hover:bg-gray-50">
+                        <h3 class="font-bold text-lg">${setInfo.title}</h3>
+                        <p class="text-sm text-gray-500 mt-1">${setInfo.description || ""}</p>
+                        <p class="text-xs text-gray-400 mt-2">소유자: ${owner}</p>
+                        <p class="text-xs text-gray-400">${visibilityText} ${adminSetText}</p>
+
+                        <button onclick='selectSet(${JSON.stringify(setInfo)})'
+                                class="mt-3 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm">
+                            이 세트 사용
+                        </button>
+                    </div>
+                `;
+            });
+        }
+
+        async function selectSet(setInfo) {
+            if (setInfo.visibility === "private" && !adminCode) {
+                if (!currentUser || currentUser.user_id !== setInfo.owner_id) {
+                    const password = prompt("비공개 세트 암호를 입력하세요.");
+
+                    if (!password) return;
+
+                    const response = await fetch(`/api/sets/${setInfo.set_id}/unlock`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            set_password: password,
+                            user_id: getUserId(),
+                            admin_code: adminCode
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        alert(result.error || "세트 열기 실패");
+                        return;
+                    }
+
+                    unlockedSetPasswords[setInfo.set_id] = password;
+                    localStorage.setItem("unlockedSetPasswords", JSON.stringify(unlockedSetPasswords));
+                }
+            }
+
+            currentSet = setInfo;
+            localStorage.setItem("currentSet", JSON.stringify(currentSet));
+            updateStatus();
+            alert(`"${setInfo.title}" 세트를 선택했습니다.`);
+            switchTab("quiz");
+        }
+
+        async function createSet() {
+            const title = document.getElementById("set-title").value.trim();
+            const description = document.getElementById("set-description").value.trim();
+            const visibility = document.getElementById("set-visibility").value;
+            const setPassword = document.getElementById("set-password").value.trim();
+            const isAdminSet = document.getElementById("set-admin-check").checked;
+
+            if (!title) {
+                alert("세트 이름을 입력해주세요.");
+                return;
+            }
+
+            if (visibility === "private" && !setPassword) {
+                alert("비공개 세트는 암호를 입력해야 합니다.");
+                return;
+            }
+
+            const response = await fetch("/api/sets", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    title,
+                    description,
+                    visibility,
+                    set_password: setPassword,
+                    user_id: getUserId(),
+                    admin_code: adminCode,
+                    is_admin_set: isAdminSet
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.error || "세트 생성 실패");
+                return;
+            }
+
+            alert("세트가 생성되었습니다.");
+            document.getElementById("set-title").value = "";
+            document.getElementById("set-description").value = "";
+            document.getElementById("set-password").value = "";
+            fetchSets();
         }
 
         function showCorrectMotion() {
@@ -270,30 +565,39 @@
             feedbackEl.classList.add("hidden");
             document.getElementById("user-answer").value = "";
 
-            try {
-                const response = await fetch("/api/quiz");
-                const data = await response.json();
-
-                if (!data) {
-                    currentQuizWord = null;
-                    document.getElementById("quiz-word").innerText = "단어장이 비어있습니다";
-                    document.getElementById("quiz-pos").innerText = "-";
-                    document.getElementById("quiz-example").innerText = "단어 등록 탭에서 단어를 먼저 추가해 주세요!";
-                    document.getElementById("quiz-example-meaning").innerText = "";
-                    document.getElementById("submit-btn").disabled = true;
-                    return;
-                }
-
-                currentQuizWord = data;
-                document.getElementById("submit-btn").disabled = false;
-                document.getElementById("quiz-word").innerText = currentQuizWord.word;
-                document.getElementById("quiz-pos").innerText = currentQuizWord.part_of_speech || "N/A";
-                document.getElementById("quiz-example").innerText = currentQuizWord.example_sentence ? `"${currentQuizWord.example_sentence}"` : "";
-                document.getElementById("quiz-example-meaning").innerText = currentQuizWord.example_meaning ? `뜻: ${currentQuizWord.example_meaning}` : "";
-            } catch (err) {
-                console.error(err);
-                alert("퀴즈 데이터를 불러오지 못했습니다.");
+            if (!currentSet) {
+                currentQuizWord = null;
+                document.getElementById("quiz-word").innerText = "세트를 선택해주세요";
+                document.getElementById("quiz-pos").innerText = "-";
+                document.getElementById("quiz-example").innerText = "세트 선택 탭에서 단어 세트를 먼저 선택하세요.";
+                document.getElementById("quiz-example-meaning").innerText = "";
+                return;
             }
+
+            const url = `/api/quiz?set_id=${currentSet.set_id}&user_id=${getUserId()}&admin_code=${encodeURIComponent(adminCode)}&set_password=${encodeURIComponent(getSetPassword())}`;
+
+            const response = await fetch(url);
+            const data = await response.json();
+
+            if (!response.ok) {
+                alert(data.error || "퀴즈를 불러오지 못했습니다.");
+                return;
+            }
+
+            if (!data) {
+                currentQuizWord = null;
+                document.getElementById("quiz-word").innerText = "단어가 없습니다";
+                document.getElementById("quiz-pos").innerText = "-";
+                document.getElementById("quiz-example").innerText = "이 세트에 단어를 추가해주세요.";
+                document.getElementById("quiz-example-meaning").innerText = "";
+                return;
+            }
+
+            currentQuizWord = data;
+            document.getElementById("quiz-word").innerText = data.word;
+            document.getElementById("quiz-pos").innerText = data.part_of_speech || "N/A";
+            document.getElementById("quiz-example").innerText = data.example_sentence ? `"${data.example_sentence}"` : "";
+            document.getElementById("quiz-example-meaning").innerText = data.example_meaning ? `뜻: ${data.example_meaning}` : "";
         }
 
         async function submitAnswer() {
@@ -302,7 +606,7 @@
             const userAnswer = document.getElementById("user-answer").value.trim();
 
             if (!userAnswer) {
-                alert("뜻을 입력해주세요!");
+                alert("뜻을 입력해주세요.");
                 return;
             }
 
@@ -311,211 +615,202 @@
             const isCorrect = correctMeaning.includes(userMeaning);
 
             const feedbackEl = document.getElementById("quiz-feedback");
-
             feedbackEl.classList.remove("hidden", "bg-green-100", "text-green-700", "bg-red-100", "text-red-700");
 
-            try {
-                await fetch("/api/quiz-logs", {
+            await fetch("/api/quiz-logs", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: getUserId() || null,
+                    word_id: currentQuizWord.word_id,
+                    user_answer: userAnswer,
+                    is_correct: isCorrect
+                })
+            });
+
+            if (isCorrect) {
+                feedbackEl.innerText = `🎉 정답입니다! (${currentQuizWord.meaning})`;
+                feedbackEl.classList.add("bg-green-100", "text-green-700");
+                showCorrectMotion();
+            } else {
+                feedbackEl.innerText = `😢 틀렸습니다. 정답: ${currentQuizWord.meaning}`;
+                feedbackEl.classList.add("bg-red-100", "text-red-700");
+
+                await fetch("/api/wrong-notes", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        word_id: currentQuizWord.word_id,
-                        user_answer: userAnswer,
-                        is_correct: isCorrect
+                        user_id: getUserId() || null,
+                        word_id: currentQuizWord.word_id
                     })
                 });
-
-                if (isCorrect) {
-                    feedbackEl.innerText = `🎉 정답입니다! (${currentQuizWord.meaning})`;
-                    feedbackEl.classList.add("bg-green-100", "text-green-700");
-                    showCorrectMotion();
-                } else {
-                    feedbackEl.innerText = `😢 틀렸습니다. 정답: ${currentQuizWord.meaning}`;
-                    feedbackEl.classList.add("bg-red-100", "text-red-700");
-
-                    await fetch("/api/wrong-notes", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ word_id: currentQuizWord.word_id })
-                    });
-                }
-
-                setTimeout(fetchRandomQuiz, 2000);
-            } catch (err) {
-                console.error(err);
-                alert("정답 처리 중 오류가 발생했습니다.");
             }
+
+            setTimeout(fetchRandomQuiz, 2000);
         }
 
         async function fetchSavedWords() {
-            try {
-                const response = await fetch("/api/words");
-                const words = await response.json();
-
-                const tbody = document.getElementById("words-list");
-                const badge = document.getElementById("words-count-badge");
-
-                badge.innerText = words.length;
-                tbody.innerHTML = "";
-
-                if (words.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="6" class="py-8 text-center text-gray-400">
-                                아직 저장된 단어가 없습니다.
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                words.forEach(wordInfo => {
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="py-3 px-2 font-semibold text-gray-900">${wordInfo.word}</td>
-                            <td class="py-3 px-2 text-gray-500 text-xs">${wordInfo.part_of_speech || "-"}</td>
-                            <td class="py-3 px-2 text-indigo-600 font-medium">${wordInfo.meaning}</td>
-                            <td class="py-3 px-2 text-gray-600">${wordInfo.example_sentence || "-"}</td>
-                            <td class="py-3 px-2 text-gray-500">${wordInfo.example_meaning || "-"}</td>
-                            <td class="py-3 px-2 text-center">
-                                <button onclick="deleteWord(${wordInfo.word_id})"
-                                        class="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-semibold hover:bg-red-600 transition">
-                                    삭제
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (err) {
-                console.error(err);
-                alert("저장된 단어를 불러오지 못했습니다.");
-            }
-        }
-
-        async function deleteWord(wordId) {
-            const adminCode = document.getElementById("delete-admin-code").value.trim();
-
-            if (!adminCode) {
-                alert("삭제하려면 관리자 코드를 입력해야 합니다.");
+            if (!currentSet) {
+                alert("먼저 세트를 선택해주세요.");
+                switchTab("sets");
                 return;
             }
 
-            const isConfirmed = confirm("정말 이 단어를 삭제할까요?");
+            const url = `/api/words?set_id=${currentSet.set_id}&user_id=${getUserId()}&admin_code=${encodeURIComponent(adminCode)}&set_password=${encodeURIComponent(getSetPassword())}`;
 
-            if (!isConfirmed) return;
+            const response = await fetch(url);
+            const words = await response.json();
 
-            try {
-                const response = await fetch(`/api/words/${wordId}`, {
-                    method: "DELETE",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ admin_code: adminCode })
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    alert(result.error || "단어 삭제에 실패했습니다.");
-                    return;
-                }
-
-                alert("단어가 삭제되었습니다.");
-                fetchSavedWords();
-                fetchRandomQuiz();
-            } catch (err) {
-                console.error(err);
-                alert("서버와 통신 중 오류가 발생했습니다.");
+            if (!response.ok) {
+                alert(words.error || "단어 목록 조회 실패");
+                return;
             }
+
+            const tbody = document.getElementById("words-list");
+            const badge = document.getElementById("words-count-badge");
+
+            badge.innerText = words.length;
+            tbody.innerHTML = "";
+
+            if (words.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="py-8 text-center text-gray-400">
+                            아직 저장된 단어가 없습니다.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            words.forEach(wordInfo => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="py-3 px-2 font-semibold">${wordInfo.word}</td>
+                        <td class="py-3 px-2 text-gray-500">${wordInfo.part_of_speech || "-"}</td>
+                        <td class="py-3 px-2 text-indigo-600 font-medium">${wordInfo.meaning}</td>
+                        <td class="py-3 px-2 text-gray-600">${wordInfo.example_sentence || "-"}</td>
+                        <td class="py-3 px-2 text-gray-500">${wordInfo.example_meaning || "-"}</td>
+                        <td class="py-3 px-2 text-center">
+                            <button onclick="deleteWord(${wordInfo.word_id})"
+                                    class="bg-red-500 text-white px-3 py-1 rounded-md text-xs">
+                                삭제
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function deleteWord(wordId) {
+            if (!confirm("정말 삭제할까요?")) return;
+
+            const response = await fetch(`/api/words/${wordId}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    user_id: getUserId(),
+                    admin_code: adminCode
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.error || "삭제 실패");
+                return;
+            }
+
+            alert("삭제되었습니다.");
+            fetchSavedWords();
         }
 
         async function fetchWrongNotes() {
-            try {
-                const response = await fetch("/api/wrong-notes");
-                const wrongNotes = await response.json();
+            const response = await fetch(`/api/wrong-notes?user_id=${getUserId()}`);
+            const wrongNotes = await response.json();
 
-                const tbody = document.getElementById("wrong-notes-list");
-                const badge = document.getElementById("wrong-count-badge");
+            const tbody = document.getElementById("wrong-notes-list");
+            const badge = document.getElementById("wrong-count-badge");
 
-                badge.innerText = wrongNotes.length;
-                tbody.innerHTML = "";
+            badge.innerText = wrongNotes.length;
+            tbody.innerHTML = "";
 
-                if (wrongNotes.length === 0) {
-                    tbody.innerHTML = `
-                        <tr>
-                            <td colspan="5" class="py-8 text-center text-gray-400">
-                                오답 노트가 비어있습니다. 대단해요! ✨
-                            </td>
-                        </tr>
-                    `;
-                    return;
-                }
-
-                wrongNotes.forEach(note => {
-                    const date = new Date(note.last_wrong_at).toLocaleDateString();
-
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-gray-50 transition">
-                            <td class="py-3 px-2 font-semibold text-gray-900">${note.word}</td>
-                            <td class="py-3 px-2 text-gray-500 text-xs">${note.part_of_speech || "-"}</td>
-                            <td class="py-3 px-2 text-indigo-600 font-medium">${note.meaning}</td>
-                            <td class="py-3 px-2 text-center text-red-500 font-bold">${note.wrong_count}회</td>
-                            <td class="py-3 px-2 text-right text-gray-400 text-xs">${date}</td>
-                        </tr>
-                    `;
-                });
-            } catch (err) {
-                console.error(err);
-                alert("오답 노트를 불러오지 못했습니다.");
+            if (wrongNotes.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="py-8 text-center text-gray-400">
+                            오답 노트가 비어있습니다.
+                        </td>
+                    </tr>
+                `;
+                return;
             }
+
+            wrongNotes.forEach(note => {
+                const date = new Date(note.last_wrong_at).toLocaleDateString();
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="py-3 px-2 font-semibold">${note.word}</td>
+                        <td class="py-3 px-2 text-gray-500">${note.part_of_speech || "-"}</td>
+                        <td class="py-3 px-2 text-indigo-600">${note.meaning}</td>
+                        <td class="py-3 px-2 text-center text-red-500 font-bold">${note.wrong_count}회</td>
+                        <td class="py-3 px-2 text-right text-gray-400">${date}</td>
+                    </tr>
+                `;
+            });
         }
 
         async function saveWord(e) {
             e.preventDefault();
+
+            if (!currentSet) {
+                alert("먼저 세트를 선택해주세요.");
+                switchTab("sets");
+                return;
+            }
 
             const word = document.getElementById("form-word").value.trim();
             const meaning = document.getElementById("form-meaning").value.trim();
             const partOfSpeech = document.getElementById("form-pos").value;
             const exampleSentence = document.getElementById("form-example").value.trim();
             const exampleMeaning = document.getElementById("form-example-meaning").value.trim();
-            const adminCode = document.getElementById("form-admin-code").value.trim();
 
-            if (!word || !meaning) {
-                alert("단어와 뜻은 반드시 입력해야 합니다.");
+            const response = await fetch("/api/words", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    set_id: currentSet.set_id,
+                    word,
+                    meaning,
+                    part_of_speech: partOfSpeech,
+                    example_sentence: exampleSentence,
+                    example_meaning: exampleMeaning,
+                    user_id: getUserId(),
+                    admin_code: adminCode
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                alert(result.error || "단어 저장 실패");
                 return;
             }
 
-            try {
-                const response = await fetch("/api/words", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        word: word,
-                        meaning: meaning,
-                        part_of_speech: partOfSpeech,
-                        example_sentence: exampleSentence,
-                        example_meaning: exampleMeaning,
-                        admin_code: adminCode
-                    })
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    alert(result.error || "단어 저장에 실패했습니다.");
-                    return;
-                }
-
-                alert("단어가 성공적으로 등록되었습니다! 📝");
-                document.getElementById("word-form").reset();
-                switchTab("quiz");
-            } catch (err) {
-                console.error(err);
-                alert("서버와 통신 중 오류가 발생했습니다.");
-            }
+            alert("단어가 저장되었습니다.");
+            document.getElementById("word-form").reset();
+            fetchRandomQuiz();
         }
 
         async function saveBulkWords() {
+            if (!currentSet) {
+                alert("먼저 세트를 선택해주세요.");
+                switchTab("sets");
+                return;
+            }
+
             const input = document.getElementById("bulk-input").value.trim();
-            const adminCode = document.getElementById("bulk-admin-code").value.trim();
             const resultBox = document.getElementById("bulk-result");
 
             resultBox.classList.add("hidden");
@@ -545,61 +840,45 @@
 
                 if (word && meaning) {
                     words.push({
-                        word: word,
-                        meaning: meaning,
+                        word,
+                        meaning,
                         part_of_speech: "",
-                        example_sentence: example_sentence,
-                        example_meaning: example_meaning
+                        example_sentence,
+                        example_meaning
                     });
                 }
             });
 
-            if (words.length === 0) {
-                resultBox.innerText = "저장할 수 있는 단어가 없습니다. 형식을 확인해주세요.";
+            const response = await fetch("/api/words/bulk", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    set_id: currentSet.set_id,
+                    words,
+                    user_id: getUserId(),
+                    admin_code: adminCode
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                resultBox.innerText = result.error || "대량 저장 실패";
                 resultBox.classList.remove("hidden");
                 resultBox.classList.add("bg-red-100", "text-red-700");
                 return;
             }
 
-            try {
-                const response = await fetch("/api/words/bulk", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        words: words,
-                        admin_code: adminCode
-                    })
-                });
-
-                const result = await response.json();
-
-                if (!response.ok) {
-                    resultBox.innerText = result.error || "대량 저장에 실패했습니다.";
-                    resultBox.classList.remove("hidden");
-                    resultBox.classList.add("bg-red-100", "text-red-700");
-                    return;
-                }
-
-                resultBox.innerText = `${result.inserted_count}개의 단어가 저장되었습니다.`;
-                resultBox.classList.remove("hidden");
-                resultBox.classList.add("bg-green-100", "text-green-700");
-
-                document.getElementById("bulk-input").value = "";
-                document.getElementById("bulk-admin-code").value = "";
-            } catch (err) {
-                console.error(err);
-                resultBox.innerText = "서버와 통신 중 오류가 발생했습니다.";
-                resultBox.classList.remove("hidden");
-                resultBox.classList.add("bg-red-100", "text-red-700");
-            }
+            resultBox.innerText = `${result.inserted_count}개의 단어가 저장되었습니다.`;
+            resultBox.classList.remove("hidden");
+            resultBox.classList.add("bg-green-100", "text-green-700");
+            document.getElementById("bulk-input").value = "";
         }
 
         document.addEventListener("keydown", function(event) {
             const quizTab = document.getElementById("tab-quiz");
 
-            if (quizTab.classList.contains("hidden")) {
-                return;
-            }
+            if (quizTab.classList.contains("hidden")) return;
 
             const activeElement = document.activeElement;
             const isTyping =
@@ -612,16 +891,15 @@
             }
 
             if (event.key === " ") {
-                if (isTyping) {
-                    return;
-                }
+                if (isTyping) return;
 
                 event.preventDefault();
                 fetchRandomQuiz();
             }
         });
 
-        fetchRandomQuiz();
+        updateStatus();
+        fetchSets();
     </script>
 </body>
 </html>
