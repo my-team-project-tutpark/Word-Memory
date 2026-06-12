@@ -54,12 +54,7 @@ function getSet(setId, callback) {
                 return;
             }
 
-            if (results.length === 0) {
-                callback(null, null);
-                return;
-            }
-
-            callback(null, results[0]);
+            callback(null, results[0] || null);
         }
     );
 }
@@ -69,9 +64,25 @@ function canViewSet(setInfo, userId, adminCode, setPassword) {
 
     if (isAdminCode(adminCode)) return true;
 
-    if (setInfo.visibility === "public") return true;
+    if (setInfo.is_admin_set && !setInfo.admin_approved) {
+        return false;
+    }
 
-    if (userId && setInfo.owner_id === Number(userId)) return true;
+    if (setInfo.guest_only && userId) {
+        return false;
+    }
+
+    if (!userId) {
+        return Boolean(setInfo.is_admin_set && setInfo.admin_approved && setInfo.guest_only);
+    }
+
+    if (setInfo.owner_id && Number(setInfo.owner_id) === Number(userId)) {
+        return true;
+    }
+
+    if (setInfo.visibility === "public" && !setInfo.guest_only) {
+        return true;
+    }
 
     if (setInfo.visibility === "private") {
         if (setInfo.set_password && setPassword) {
@@ -87,10 +98,23 @@ function canManageSet(setInfo, userId, adminCode) {
 
     if (isAdminCode(adminCode)) return true;
 
-    if (userId && setInfo.owner_id === Number(userId)) return true;
+    if (userId && setInfo.owner_id && Number(setInfo.owner_id) === Number(userId)) {
+        return true;
+    }
 
     return false;
 }
+
+app.post("/api/admin-check", (req, res) => {
+    const { admin_code } = req.body;
+
+    if (!isAdminCode(admin_code)) {
+        res.status(403).json({ error: "관리자 코드가 올바르지 않습니다." });
+        return;
+    }
+
+    res.json({ message: "관리자 확인 성공" });
+});
 
 app.post("/api/signup", (req, res) => {
     const { username, password, admin_code } = req.body;
@@ -188,6 +212,8 @@ app.get("/api/sets", (req, res) => {
             FROM word_sets ws
             LEFT JOIN users u ON ws.owner_id = u.user_id
             WHERE ws.is_admin_set = TRUE
+              AND ws.admin_approved = TRUE
+              AND ws.guest_only = TRUE
             ORDER BY ws.created_at DESC
         `;
     } else {
@@ -195,11 +221,19 @@ app.get("/api/sets", (req, res) => {
             SELECT ws.*, u.username AS owner_name
             FROM word_sets ws
             LEFT JOIN users u ON ws.owner_id = u.user_id
-            WHERE ws.visibility = 'public'
-               OR ws.owner_id = ?
-               OR ws.is_admin_set = TRUE
+            WHERE 
+                ws.owner_id = ?
+                OR (
+                    ws.visibility = 'public'
+                    AND ws.guest_only = FALSE
+                    AND (
+                        ws.is_admin_set = FALSE
+                        OR ws.admin_approved = TRUE
+                    )
+                )
             ORDER BY ws.created_at DESC
         `;
+
         params = [userId];
     }
 
@@ -222,7 +256,9 @@ app.post("/api/sets", (req, res) => {
         set_password,
         user_id,
         admin_code,
-        is_admin_set
+        is_admin_set,
+        admin_approved,
+        guest_only
     } = req.body;
 
     if (!title) {
@@ -243,18 +279,29 @@ app.post("/api/sets", (req, res) => {
             ? hashPassword(set_password)
             : null;
 
-    const ownerId = admin && is_admin_set ? null : user_id;
-    const adminSet = admin && is_admin_set ? true : false;
+    const finalIsAdminSet = admin && is_admin_set ? true : false;
+    const finalOwnerId = finalIsAdminSet ? null : user_id;
+    const finalAdminApproved = finalIsAdminSet ? Boolean(admin_approved) : true;
+    const finalGuestOnly = finalIsAdminSet ? Boolean(guest_only) : false;
 
     const sql = `
         INSERT INTO word_sets
-        (owner_id, title, description, visibility, set_password, is_admin_set)
-        VALUES (?, ?, ?, ?, ?, ?)
+        (owner_id, title, description, visibility, set_password, is_admin_set, admin_approved, guest_only)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     db.query(
         sql,
-        [ownerId, title, description || "", finalVisibility, hashedSetPassword, adminSet],
+        [
+            finalOwnerId || null,
+            title,
+            description || "",
+            finalVisibility,
+            hashedSetPassword,
+            finalIsAdminSet,
+            finalAdminApproved,
+            finalGuestOnly
+        ],
         (err, result) => {
             if (err) {
                 console.error("세트 생성 실패:", err);
@@ -268,6 +315,248 @@ app.post("/api/sets", (req, res) => {
             });
         }
     );
+});
+
+app.patch("/api/sets/:id", (req, res) => {
+    const setId = req.params.id;
+
+    const {
+        title,
+        description,
+        visibility,
+        set_password,
+        user_id,
+        admin_code
+    } = req.body;
+
+    if (!title) {
+        res.status(400).json({ error: "세트 이름을 입력해주세요." });
+        return;
+    }
+
+    getSet(setId, (err, setInfo) => {
+        if (err) {
+            console.error("세트 확인 실패:", err);
+            res.status(500).json({ error: "세트 확인 실패" });
+            return;
+        }
+
+        if (!setInfo) {
+            res.status(404).json({ error: "세트를 찾을 수 없습니다." });
+            return;
+        }
+
+        if (!canManageSet(setInfo, user_id, admin_code)) {
+            res.status(403).json({ error: "이 세트를 수정할 권한이 없습니다." });
+            return;
+        }
+
+        const finalVisibility = visibility === "private" ? "private" : "public";
+
+        let finalPassword = null;
+
+        if (finalVisibility === "private") {
+            if (set_password) {
+                finalPassword = hashPassword(set_password);
+            } else if (setInfo.set_password) {
+                finalPassword = setInfo.set_password;
+            } else {
+                res.status(400).json({ error: "비공개 세트는 암호가 필요합니다." });
+                return;
+            }
+        }
+
+        const sql = `
+            UPDATE word_sets
+            SET title = ?,
+                description = ?,
+                visibility = ?,
+                set_password = ?
+            WHERE set_id = ?
+        `;
+
+        db.query(
+            sql,
+            [
+                title,
+                description || "",
+                finalVisibility,
+                finalPassword,
+                setId
+            ],
+            (err, result) => {
+                if (err) {
+                    console.error("세트 수정 실패:", err);
+                    res.status(500).json({ error: "세트 수정 실패" });
+                    return;
+                }
+
+                if (result.affectedRows === 0) {
+                    res.status(404).json({ error: "세트를 찾을 수 없습니다." });
+                    return;
+                }
+
+                res.json({ message: "세트 수정 성공" });
+            }
+        );
+    });
+});
+
+app.delete("/api/sets/:id", (req, res) => {
+    const setId = req.params.id;
+    const { user_id, admin_code } = req.body;
+
+    getSet(setId, (err, setInfo) => {
+        if (err) {
+            console.error("세트 확인 실패:", err);
+            res.status(500).json({ error: "세트 확인 실패" });
+            return;
+        }
+
+        if (!setInfo) {
+            res.status(404).json({ error: "세트를 찾을 수 없습니다." });
+            return;
+        }
+
+        if (!canManageSet(setInfo, user_id, admin_code)) {
+            res.status(403).json({ error: "이 세트를 삭제할 권한이 없습니다." });
+            return;
+        }
+
+        db.query(
+            "DELETE FROM word_sets WHERE set_id = ?",
+            [setId],
+            (err, result) => {
+                if (err) {
+                    console.error("세트 삭제 실패:", err);
+                    res.status(500).json({ error: "세트 삭제 실패" });
+                    return;
+                }
+
+                if (result.affectedRows === 0) {
+                    res.status(404).json({ error: "세트를 찾을 수 없습니다." });
+                    return;
+                }
+
+                res.json({ message: "세트 삭제 성공" });
+            }
+        );
+    });
+});
+
+app.get("/api/admin/sets", (req, res) => {
+    const adminCode = req.query.admin_code;
+
+    if (!isAdminCode(adminCode)) {
+        res.status(403).json({ error: "관리자 권한이 필요합니다." });
+        return;
+    }
+
+    const sql = `
+        SELECT ws.*, u.username AS owner_name
+        FROM word_sets ws
+        LEFT JOIN users u ON ws.owner_id = u.user_id
+        ORDER BY ws.created_at DESC
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("관리자 세트 목록 조회 실패:", err);
+            res.status(500).json({ error: "관리자 세트 목록 조회 실패" });
+            return;
+        }
+
+        res.json(results);
+    });
+});
+
+app.patch("/api/admin/sets/:id", (req, res) => {
+    const setId = req.params.id;
+
+    const {
+        admin_code,
+        title,
+        description,
+        visibility,
+        admin_approved,
+        guest_only,
+        is_admin_set
+    } = req.body;
+
+    if (!isAdminCode(admin_code)) {
+        res.status(403).json({ error: "관리자 권한이 필요합니다." });
+        return;
+    }
+
+    if (!title) {
+        res.status(400).json({ error: "세트 이름이 필요합니다." });
+        return;
+    }
+
+    const finalVisibility = visibility === "private" ? "private" : "public";
+
+    const sql = `
+        UPDATE word_sets
+        SET title = ?,
+            description = ?,
+            visibility = ?,
+            is_admin_set = ?,
+            admin_approved = ?,
+            guest_only = ?
+        WHERE set_id = ?
+    `;
+
+    db.query(
+        sql,
+        [
+            title,
+            description || "",
+            finalVisibility,
+            Boolean(is_admin_set),
+            Boolean(admin_approved),
+            Boolean(guest_only),
+            setId
+        ],
+        (err, result) => {
+            if (err) {
+                console.error("세트 수정 실패:", err);
+                res.status(500).json({ error: "세트 수정 실패" });
+                return;
+            }
+
+            if (result.affectedRows === 0) {
+                res.status(404).json({ error: "세트를 찾을 수 없습니다." });
+                return;
+            }
+
+            res.json({ message: "세트 수정 성공" });
+        }
+    );
+});
+
+app.delete("/api/admin/sets/:id", (req, res) => {
+    const setId = req.params.id;
+    const { admin_code } = req.body;
+
+    if (!isAdminCode(admin_code)) {
+        res.status(403).json({ error: "관리자 권한이 필요합니다." });
+        return;
+    }
+
+    db.query("DELETE FROM word_sets WHERE set_id = ?", [setId], (err, result) => {
+        if (err) {
+            console.error("세트 삭제 실패:", err);
+            res.status(500).json({ error: "세트 삭제 실패" });
+            return;
+        }
+
+        if (result.affectedRows === 0) {
+            res.status(404).json({ error: "세트를 찾을 수 없습니다." });
+            return;
+        }
+
+        res.json({ message: "세트 삭제 성공" });
+    });
 });
 
 app.post("/api/sets/:id/unlock", (req, res) => {
@@ -291,7 +580,7 @@ app.post("/api/sets/:id/unlock", (req, res) => {
             return;
         }
 
-        res.status(403).json({ error: "비공개 세트 암호가 틀렸습니다." });
+        res.status(403).json({ error: "이 세트를 사용할 권한이 없습니다." });
     });
 });
 
@@ -369,12 +658,7 @@ app.get("/api/quiz", (req, res) => {
                 return;
             }
 
-            if (results.length === 0) {
-                res.json(null);
-                return;
-            }
-
-            res.json(results[0]);
+            res.json(results[0] || null);
         });
     });
 });
@@ -416,7 +700,14 @@ app.post("/api/words", (req, res) => {
 
         db.query(
             sql,
-            [set_id, word, meaning, part_of_speech || "", example_sentence || "", example_meaning || ""],
+            [
+                set_id,
+                word,
+                meaning,
+                part_of_speech || "",
+                example_sentence || "",
+                example_meaning || ""
+            ],
             (err, result) => {
                 if (err) {
                     console.error("단어 저장 실패:", err);
@@ -453,14 +744,21 @@ app.post("/api/words/bulk", (req, res) => {
             return;
         }
 
-        const values = words.map(item => [
-            set_id,
-            item.word,
-            item.meaning,
-            item.part_of_speech || "",
-            item.example_sentence || "",
-            item.example_meaning || ""
-        ]);
+        const values = words
+            .filter(item => item.word && item.meaning)
+            .map(item => [
+                set_id,
+                item.word,
+                item.meaning,
+                item.part_of_speech || "",
+                item.example_sentence || "",
+                item.example_meaning || ""
+            ]);
+
+        if (values.length === 0) {
+            res.status(400).json({ error: "올바른 단어 데이터가 없습니다." });
+            return;
+        }
 
         const sql = `
             INSERT INTO words
@@ -549,7 +847,7 @@ app.post("/api/wrong-notes", (req, res) => {
     const { user_id, word_id } = req.body;
 
     const findSql = `
-        SELECT wrong_id, wrong_count
+        SELECT wrong_id
         FROM wrong_notes
         WHERE word_id = ? AND (user_id <=> ?)
     `;
