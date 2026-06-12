@@ -5,18 +5,18 @@ const path = require("path");
 const crypto = require("crypto");
 
 const app = express();
-
-const ADMIN_CODE = "rockclub007#";
+const ADMIN_CODE = process.env.ADMIN_CODE || "rockclub007#";
 
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "src")));
 
 const db = mysql.createPool({
-    host: "mysql",
-    user: "root",
-    password: "1234",
-    database: "word_memory",
+    host: process.env.DB_HOST || "mysql",
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER || "root",
+    password: process.env.DB_PASSWORD || "1234",
+    database: process.env.DB_NAME || "word_memory",
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
