@@ -1,6 +1,12 @@
 CREATE DATABASE IF NOT EXISTS word_memory;
 USE word_memory;
 
+DROP TABLE IF EXISTS quiz_logs;
+DROP TABLE IF EXISTS wrong_notes;
+DROP TABLE IF EXISTS words;
+DROP TABLE IF EXISTS word_sets;
+DROP TABLE IF EXISTS users;
+
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
@@ -17,6 +23,8 @@ CREATE TABLE word_sets (
     visibility VARCHAR(20) DEFAULT 'public',
     set_password VARCHAR(255) NULL,
     is_admin_set BOOLEAN DEFAULT FALSE,
+    admin_approved BOOLEAN DEFAULT FALSE,
+    guest_only BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (owner_id) REFERENCES users(user_id)
         ON DELETE SET NULL
@@ -61,6 +69,6 @@ CREATE TABLE quiz_logs (
 );
 
 INSERT INTO word_sets
-(title, description, visibility, is_admin_set)
+(title, description, visibility, is_admin_set, admin_approved, guest_only)
 VALUES
-('관리자 기본 세트', '비회원도 사용할 수 있는 기본 단어 세트입니다.', 'public', TRUE);
+('관리자 기본 세트', '비회원도 사용할 수 있는 기본 단어 세트입니다.', 'public', TRUE, TRUE, TRUE);
