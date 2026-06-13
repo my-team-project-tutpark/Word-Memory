@@ -400,8 +400,7 @@ important, 중요한, Adjective"></textarea>
 
         </main>
     </div>
-
-    <script>
+        <script>
         let currentQuizWord = null;
         let quizAutoTimer = null;
         let currentUser = JSON.parse(localStorage.getItem("currentUser")) || null;
@@ -461,6 +460,7 @@ important, 중요한, Adjective"></textarea>
             localStorage.removeItem("currentSet");
             localStorage.removeItem("adminCode");
             localStorage.setItem("adminVerified", "false");
+            localStorage.setItem("guestMode", "true");
 
             enterApp();
         }
@@ -493,6 +493,7 @@ important, 중요한, Adjective"></textarea>
             localStorage.setItem("adminCode", adminCode);
             localStorage.setItem("adminVerified", "true");
             localStorage.removeItem("currentUser");
+            localStorage.removeItem("guestMode");
 
             enterApp();
         }
@@ -516,6 +517,7 @@ important, 중요한, Adjective"></textarea>
 
             currentUser = result.user;
             localStorage.setItem("currentUser", JSON.stringify(currentUser));
+            localStorage.removeItem("guestMode");
 
             enterApp();
         }
@@ -544,6 +546,7 @@ important, 중요한, Adjective"></textarea>
 
             currentUser = result.user;
             localStorage.setItem("currentUser", JSON.stringify(currentUser));
+            localStorage.removeItem("guestMode");
 
             if (currentUser.role === "admin" && signupAdminCode) {
                 adminCode = signupAdminCode;
@@ -664,6 +667,7 @@ important, 중요한, Adjective"></textarea>
             adminVerified = true;
             localStorage.setItem("adminCode", adminCode);
             localStorage.setItem("adminVerified", "true");
+            localStorage.removeItem("guestMode");
 
             updateStatus();
             fetchSets();
@@ -690,6 +694,7 @@ important, 중요한, Adjective"></textarea>
             localStorage.removeItem("currentUser");
             localStorage.removeItem("currentSet");
             localStorage.removeItem("adminCode");
+            localStorage.removeItem("guestMode");
             localStorage.setItem("adminVerified", "false");
 
             updateStatus();
@@ -906,10 +911,7 @@ important, 중요한, Adjective"></textarea>
             }
 
             const newTitle = prompt("새 세트 이름을 입력하세요.", setInfo.title);
-
-            if (!newTitle) {
-                return;
-            }
+            if (!newTitle) return;
 
             const newDescription = prompt("새 세트 설명을 입력하세요.", setInfo.description || "");
 
@@ -976,9 +978,7 @@ important, 중요한, Adjective"></textarea>
                 `"${setInfo.title}" 세트를 삭제할까요?\n세트를 삭제하면 안에 있는 단어도 모두 삭제됩니다.`
             );
 
-            if (!isConfirmed) {
-                return;
-            }
+            if (!isConfirmed) return;
 
             const codeToSend = adminVerified ? adminCode : "";
 
@@ -1124,9 +1124,7 @@ important, 중요한, Adjective"></textarea>
         async function deleteAdminSet(setId) {
             const codeToSend = adminVerified ? adminCode : "";
 
-            if (!confirm("세트를 삭제하면 안의 단어도 모두 삭제됩니다. 정말 삭제할까요?")) {
-                return;
-            }
+            if (!confirm("세트를 삭제하면 안의 단어도 모두 삭제됩니다. 정말 삭제할까요?")) return;
 
             const response = await fetch(`/api/admin/sets/${setId}`, {
                 method: "DELETE",
@@ -1216,10 +1214,7 @@ important, 중요한, Adjective"></textarea>
         async function forceDeleteUser(userId, username) {
             const codeToSend = adminVerified ? adminCode : "";
 
-            const firstConfirm = confirm(
-                `"${username}" 회원을 강제로 탈퇴시킬까요?`
-            );
-
+            const firstConfirm = confirm(`"${username}" 회원을 강제로 탈퇴시킬까요?`);
             if (!firstConfirm) return;
 
             const deleteSets = confirm(
@@ -1684,7 +1679,20 @@ important, 중요한, Adjective"></textarea>
             }
         });
 
-        updateStatus();
+        function autoEnterAfterRefresh() {
+            const savedUser = localStorage.getItem("currentUser");
+            const savedAdmin = localStorage.getItem("adminVerified") === "true";
+            const guestMode = localStorage.getItem("guestMode") === "true";
+
+            if (savedUser || savedAdmin || guestMode) {
+                enterApp();
+                return;
+            }
+
+            updateStatus();
+        }
+
+        autoEnterAfterRefresh();
     </script>
 </body>
 </html>
