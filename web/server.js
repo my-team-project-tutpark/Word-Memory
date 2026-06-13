@@ -224,8 +224,7 @@ app.get("/api/sets", (req, res) => {
             WHERE 
                 ws.owner_id = ?
                 OR (
-                    ws.visibility = 'public'
-                    AND ws.guest_only = FALSE
+                    ws.guest_only = FALSE
                     AND (
                         ws.is_admin_set = FALSE
                         OR ws.admin_approved = TRUE
@@ -557,6 +556,110 @@ app.delete("/api/admin/sets/:id", (req, res) => {
 
         res.json({ message: "세트 삭제 성공" });
     });
+});
+
+app.get("/api/admin/users", (req, res) => {
+    const adminCode = req.query.admin_code;
+
+    if (!isAdminCode(adminCode)) {
+        res.status(403).json({ error: "관리자 권한이 필요합니다." });
+        return;
+    }
+
+    const sql = `
+        SELECT 
+            u.user_id,
+            u.username,
+            u.role,
+            u.created_at,
+            COUNT(ws.set_id) AS set_count
+        FROM users u
+        LEFT JOIN word_sets ws ON u.user_id = ws.owner_id
+        GROUP BY u.user_id, u.username, u.role, u.created_at
+        ORDER BY u.created_at DESC
+    `;
+
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("회원 목록 조회 실패:", err);
+            res.status(500).json({ error: "회원 목록 조회 실패" });
+            return;
+        }
+
+        res.json(results);
+    });
+});
+
+app.delete("/api/admin/users/:id", (req, res) => {
+    const userId = req.params.id;
+    const { admin_code, delete_sets } = req.body;
+
+    if (!isAdminCode(admin_code)) {
+        res.status(403).json({ error: "관리자 권한이 필요합니다." });
+        return;
+    }
+
+    db.query(
+        "SELECT user_id, username, role FROM users WHERE user_id = ?",
+        [userId],
+        (err, results) => {
+            if (err) {
+                console.error("회원 확인 실패:", err);
+                res.status(500).json({ error: "회원 확인 실패" });
+                return;
+            }
+
+            if (results.length === 0) {
+                res.status(404).json({ error: "회원을 찾을 수 없습니다." });
+                return;
+            }
+
+            const userInfo = results[0];
+
+            if (userInfo.role === "admin") {
+                res.status(403).json({ error: "관리자 계정은 강제 탈퇴시킬 수 없습니다." });
+                return;
+            }
+
+            function deleteUser() {
+                db.query("DELETE FROM users WHERE user_id = ?", [userId], (err) => {
+                    if (err) {
+                        console.error("회원 강제 탈퇴 실패:", err);
+                        res.status(500).json({ error: "회원 강제 탈퇴 실패" });
+                        return;
+                    }
+
+                    res.json({
+                        message: `"${userInfo.username}" 회원을 강제 탈퇴시켰습니다.`
+                    });
+                });
+            }
+
+            if (delete_sets) {
+                db.query("DELETE FROM word_sets WHERE owner_id = ?", [userId], (err) => {
+                    if (err) {
+                        console.error("회원 세트 삭제 실패:", err);
+                        res.status(500).json({ error: "회원 세트 삭제 실패" });
+                        return;
+                    }
+
+                    deleteUser();
+                });
+
+                return;
+            }
+
+            db.query("UPDATE word_sets SET owner_id = NULL WHERE owner_id = ?", [userId], (err) => {
+                if (err) {
+                    console.error("회원 세트 소유자 해제 실패:", err);
+                    res.status(500).json({ error: "회원 세트 소유자 해제 실패" });
+                    return;
+                }
+
+                deleteUser();
+            });
+        }
+    );
 });
 
 app.post("/api/sets/:id/unlock", (req, res) => {
