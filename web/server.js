@@ -8,7 +8,10 @@ const app = express();
 const ADMIN_CODE = process.env.ADMIN_CODE || "rockclub007#";
 
 app.use(cors());
-app.use(express.json());
+
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
 app.use(express.static(path.join(__dirname, "src")));
 
 const db = mysql.createPool({
@@ -156,38 +159,83 @@ app.post("/api/signup", (req, res) => {
     });
 });
 
-app.post("/api/login", (req, res) => {
-    const { username, password } = req.body;
+app.post("/api/words/bulk", (req, res) => {
+    const { set_id, words, user_id, admin_code } = req.body;
 
-    if (!username || !password) {
-        res.status(400).json({ error: "아이디와 비밀번호를 입력해주세요." });
+    if (!set_id || !Array.isArray(words) || words.length === 0) {
+        res.status(400).json({ error: "저장할 단어가 없습니다." });
         return;
     }
 
-    const hashedPassword = hashPassword(password);
-
-    const sql = `
-        SELECT user_id, username, role
-        FROM users
-        WHERE username = ? AND password = ?
-    `;
-
-    db.query(sql, [username, hashedPassword], (err, results) => {
+    getSet(set_id, (err, setInfo) => {
         if (err) {
-            console.error("로그인 실패:", err);
-            res.status(500).json({ error: "로그인 실패" });
+            console.error("세트 확인 실패:", err);
+            res.status(500).json({ error: "세트 확인 실패" });
             return;
         }
 
-        if (results.length === 0) {
-            res.status(401).json({ error: "아이디 또는 비밀번호가 틀렸습니다." });
+        if (!canManageSet(setInfo, user_id, admin_code)) {
+            res.status(403).json({ error: "이 세트에 단어를 추가할 권한이 없습니다." });
             return;
         }
 
-        res.json({
-            message: "로그인 성공",
-            user: results[0]
-        });
+        const values = words
+            .filter(item => item.word && item.meaning)
+            .map(item => [
+                set_id,
+                String(item.word).trim(),
+                String(item.meaning).trim(),
+                item.part_of_speech ? String(item.part_of_speech).trim() : "",
+                item.example_sentence ? String(item.example_sentence).trim() : "",
+                item.example_meaning ? String(item.example_meaning).trim() : ""
+            ]);
+
+        if (values.length === 0) {
+            res.status(400).json({ error: "올바른 단어 데이터가 없습니다." });
+            return;
+        }
+
+        const sql = `
+            INSERT INTO words
+            (set_id, word, meaning, part_of_speech, example_sentence, example_meaning)
+            VALUES ?
+        `;
+
+        const chunkSize = 200;
+        let insertedCount = 0;
+        let chunkIndex = 0;
+
+        function insertNextChunk() {
+            const start = chunkIndex * chunkSize;
+            const end = start + chunkSize;
+            const chunk = values.slice(start, end);
+
+            if (chunk.length === 0) {
+                res.json({
+                    message: "대량 단어 저장 성공",
+                    inserted_count: insertedCount
+                });
+                return;
+            }
+
+            db.query(sql, [chunk], (err, result) => {
+                if (err) {
+                    console.error("대량 단어 저장 실패:", err);
+                    res.status(500).json({
+                        error: "대량 단어 저장 실패",
+                        detail: err.message
+                    });
+                    return;
+                }
+
+                insertedCount += result.affectedRows;
+                chunkIndex++;
+
+                insertNextChunk();
+            });
+        }
+
+        insertNextChunk();
     });
 });
 
