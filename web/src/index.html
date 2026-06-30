@@ -284,20 +284,43 @@
                         세트를 선택해주세요
                     </h2>
 
-                    <div id="pronunciation-box" class="mb-4 flex flex-wrap justify-center items-center gap-2">
-                        <button
-                            id="speak-word-btn"
-                            onclick="speakCurrentQuizWord()"
-                            class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-100 disabled:opacity-40 disabled:cursor-not-allowed"
-                            disabled
-                        >
-                            🔇 발음 숨김
-                        </button>
+                    <div id="pronunciation-box" class="mb-4 space-y-3">
+                        <div class="flex flex-wrap justify-center items-center gap-2">
+                            <button
+                                id="speak-word-btn"
+                                onclick="speakCurrentQuizWord()"
+                                class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-xl text-sm font-semibold hover:bg-indigo-100 disabled:opacity-40 disabled:cursor-not-allowed"
+                                disabled
+                            >
+                                🔇 발음 숨김
+                            </button>
 
-                        <label class="flex items-center gap-2 text-xs text-gray-500 select-none">
-                            <input id="auto-speak-check" type="checkbox" checked>
-                            새 단어 자동 발음
-                        </label>
+                            <label class="flex items-center gap-2 text-xs text-gray-500 select-none">
+                                <input id="auto-speak-check" type="checkbox" checked>
+                                새 단어 자동 발음
+                            </label>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <select
+                                id="voice-select"
+                                onchange="saveVoiceSetting()"
+                                class="px-3 py-2 border border-gray-300 rounded-xl text-xs bg-white"
+                            >
+                                <option value="">영어 목소리 불러오는 중...</option>
+                            </select>
+
+                            <select
+                                id="speech-rate"
+                                onchange="saveVoiceSetting()"
+                                class="px-3 py-2 border border-gray-300 rounded-xl text-xs bg-white"
+                            >
+                                <option value="0.7">매우 느리게</option>
+                                <option value="0.8">느리게</option>
+                                <option value="0.9" selected>보통</option>
+                                <option value="1">빠르게</option>
+                            </select>
+                        </div>
                     </div>
 
                     <p id="quiz-example" class="text-sm text-gray-500 italic mb-2">
@@ -495,6 +518,7 @@ important, 중요한, Adjective"></textarea>
 
             updateStatus();
             updateAdminUI();
+            initVoiceSetting();
             fetchSets();
             switchTab("sets");
         }
@@ -1274,17 +1298,93 @@ important, 중요한, Adjective"></textarea>
                 .replace(/[.,!?'"`~]/g, "");
         }
 
-        function getEnglishVoice() {
-            if (!("speechSynthesis" in window)) return null;
+        function getEnglishVoices() {
+            if (!("speechSynthesis" in window)) return [];
 
-            const voices = window.speechSynthesis.getVoices();
+            return window.speechSynthesis
+                .getVoices()
+                .filter(voice => voice.lang && voice.lang.startsWith("en"));
+        }
+
+        function populateVoiceOptions() {
+            const voiceSelect = document.getElementById("voice-select");
+            if (!voiceSelect) return;
+
+            const voices = getEnglishVoices();
+            const savedVoiceName = localStorage.getItem("selectedVoiceName") || "";
+
+            voiceSelect.innerHTML = "";
+
+            if (voices.length === 0) {
+                voiceSelect.innerHTML = `<option value="">사용 가능한 영어 목소리 없음</option>`;
+                return;
+            }
+
+            voices.forEach(voice => {
+                const option = document.createElement("option");
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+
+                if (voice.name === savedVoiceName) {
+                    option.selected = true;
+                }
+
+                voiceSelect.appendChild(option);
+            });
+
+            if (!voiceSelect.value) {
+                const recommendedVoice =
+                    voices.find(voice => voice.lang === "en-US" && voice.name.toLowerCase().includes("samantha")) ||
+                    voices.find(voice => voice.lang === "en-US" && voice.name.toLowerCase().includes("google")) ||
+                    voices.find(voice => voice.lang === "en-US") ||
+                    voices.find(voice => voice.lang === "en-GB") ||
+                    voices[0];
+
+                voiceSelect.value = recommendedVoice.name;
+                localStorage.setItem("selectedVoiceName", recommendedVoice.name);
+            }
+        }
+
+        function saveVoiceSetting() {
+            const voiceSelect = document.getElementById("voice-select");
+            const rateSelect = document.getElementById("speech-rate");
+
+            if (voiceSelect) {
+                localStorage.setItem("selectedVoiceName", voiceSelect.value);
+            }
+
+            if (rateSelect) {
+                localStorage.setItem("speechRate", rateSelect.value);
+            }
+        }
+
+        function getSelectedVoice() {
+            const voices = getEnglishVoices();
+            const voiceSelect = document.getElementById("voice-select");
+            const savedVoiceName = voiceSelect ? voiceSelect.value : localStorage.getItem("selectedVoiceName");
 
             return (
+                voices.find(voice => voice.name === savedVoiceName) ||
                 voices.find(voice => voice.lang === "en-US") ||
                 voices.find(voice => voice.lang === "en-GB") ||
-                voices.find(voice => voice.lang && voice.lang.startsWith("en")) ||
+                voices[0] ||
                 null
             );
+        }
+
+        function getSpeechRate() {
+            const rateSelect = document.getElementById("speech-rate");
+            const savedRate = localStorage.getItem("speechRate");
+
+            if (rateSelect && rateSelect.value) {
+                return Number(rateSelect.value);
+            }
+
+            if (savedRate) {
+                return Number(savedRate);
+            }
+
+            return 0.9;
         }
 
         function speakText(text) {
@@ -1301,14 +1401,15 @@ important, 중요한, Adjective"></textarea>
 
             const utterance = new SpeechSynthesisUtterance(speechText);
             utterance.lang = "en-US";
-            utterance.rate = 0.85;
+            utterance.rate = getSpeechRate();
             utterance.pitch = 1;
             utterance.volume = 1;
 
-            const englishVoice = getEnglishVoice();
+            const selectedVoice = getSelectedVoice();
 
-            if (englishVoice) {
-                utterance.voice = englishVoice;
+            if (selectedVoice) {
+                utterance.voice = selectedVoice;
+                utterance.lang = selectedVoice.lang;
             }
 
             window.speechSynthesis.speak(utterance);
@@ -1351,9 +1452,20 @@ important, 중요한, Adjective"></textarea>
             }, 300);
         }
 
+        function initVoiceSetting() {
+            const rateSelect = document.getElementById("speech-rate");
+            const savedRate = localStorage.getItem("speechRate");
+
+            if (rateSelect && savedRate) {
+                rateSelect.value = savedRate;
+            }
+
+            populateVoiceOptions();
+        }
+
         if ("speechSynthesis" in window) {
             window.speechSynthesis.onvoiceschanged = function() {
-                getEnglishVoice();
+                populateVoiceOptions();
             };
         }
 
@@ -1856,7 +1968,8 @@ important, 중요한, Adjective"></textarea>
             const activeElement = document.activeElement;
             const isTyping =
                 activeElement.tagName === "INPUT" ||
-                activeElement.tagName === "TEXTAREA";
+                activeElement.tagName === "TEXTAREA" ||
+                activeElement.tagName === "SELECT";
 
             if (event.key === "Enter") {
                 event.preventDefault();
