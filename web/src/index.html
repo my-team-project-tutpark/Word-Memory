@@ -33,9 +33,7 @@
                 opacity: 0;
                 transform: translateX(-50%) translateY(20px) scale(0.8);
             }
-            30% {
-                opacity: 1;
-            }
+            30% { opacity: 1; }
             100% {
                 opacity: 0;
                 transform: translateX(-50%) translateY(-40px) scale(1.2);
@@ -303,11 +301,13 @@
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <select
-                                id="voice-select"
+                                id="voice-preset"
                                 onchange="saveVoiceSetting()"
                                 class="px-3 py-2 border border-gray-300 rounded-xl text-xs bg-white"
                             >
-                                <option value="">영어 목소리 불러오는 중...</option>
+                                <option value="us-clear">미국식 또박또박</option>
+                                <option value="us-slow">미국식 느리게</option>
+                                <option value="gb-clear">영국식 또박또박</option>
                             </select>
 
                             <select
@@ -315,12 +315,15 @@
                                 onchange="saveVoiceSetting()"
                                 class="px-3 py-2 border border-gray-300 rounded-xl text-xs bg-white"
                             >
-                                <option value="0.7">매우 느리게</option>
-                                <option value="0.8">느리게</option>
-                                <option value="0.9" selected>보통</option>
-                                <option value="1">빠르게</option>
+                                <option value="0.75">느리게</option>
+                                <option value="0.85" selected>보통</option>
+                                <option value="0.95">조금 빠르게</option>
                             </select>
                         </div>
+
+                        <p id="voice-info" class="text-[11px] text-gray-400">
+                            기기에 설치된 영어 음성 중 가장 가까운 발음을 자동으로 사용합니다.
+                        </p>
                     </div>
 
                     <p id="quiz-example" class="text-sm text-gray-500 italic mb-2">
@@ -1306,70 +1309,15 @@ important, 중요한, Adjective"></textarea>
                 .filter(voice => voice.lang && voice.lang.startsWith("en"));
         }
 
-        function populateVoiceOptions() {
-            const voiceSelect = document.getElementById("voice-select");
-            if (!voiceSelect) return;
+        function getVoicePreset() {
+            const presetSelect = document.getElementById("voice-preset");
+            const savedPreset = localStorage.getItem("voicePreset");
 
-            const voices = getEnglishVoices();
-            const savedVoiceName = localStorage.getItem("selectedVoiceName") || "";
-
-            voiceSelect.innerHTML = "";
-
-            if (voices.length === 0) {
-                voiceSelect.innerHTML = `<option value="">사용 가능한 영어 목소리 없음</option>`;
-                return;
+            if (presetSelect && presetSelect.value) {
+                return presetSelect.value;
             }
 
-            voices.forEach(voice => {
-                const option = document.createElement("option");
-                option.value = voice.name;
-                option.textContent = `${voice.name} (${voice.lang})`;
-
-                if (voice.name === savedVoiceName) {
-                    option.selected = true;
-                }
-
-                voiceSelect.appendChild(option);
-            });
-
-            if (!voiceSelect.value) {
-                const recommendedVoice =
-                    voices.find(voice => voice.lang === "en-US" && voice.name.toLowerCase().includes("samantha")) ||
-                    voices.find(voice => voice.lang === "en-US" && voice.name.toLowerCase().includes("google")) ||
-                    voices.find(voice => voice.lang === "en-US") ||
-                    voices.find(voice => voice.lang === "en-GB") ||
-                    voices[0];
-
-                voiceSelect.value = recommendedVoice.name;
-                localStorage.setItem("selectedVoiceName", recommendedVoice.name);
-            }
-        }
-
-        function saveVoiceSetting() {
-            const voiceSelect = document.getElementById("voice-select");
-            const rateSelect = document.getElementById("speech-rate");
-
-            if (voiceSelect) {
-                localStorage.setItem("selectedVoiceName", voiceSelect.value);
-            }
-
-            if (rateSelect) {
-                localStorage.setItem("speechRate", rateSelect.value);
-            }
-        }
-
-        function getSelectedVoice() {
-            const voices = getEnglishVoices();
-            const voiceSelect = document.getElementById("voice-select");
-            const savedVoiceName = voiceSelect ? voiceSelect.value : localStorage.getItem("selectedVoiceName");
-
-            return (
-                voices.find(voice => voice.name === savedVoiceName) ||
-                voices.find(voice => voice.lang === "en-US") ||
-                voices.find(voice => voice.lang === "en-GB") ||
-                voices[0] ||
-                null
-            );
+            return savedPreset || "us-clear";
         }
 
         function getSpeechRate() {
@@ -1384,7 +1332,106 @@ important, 중요한, Adjective"></textarea>
                 return Number(savedRate);
             }
 
-            return 0.9;
+            return 0.85;
+        }
+
+        function findVoiceByPreset(preset) {
+            const voices = getEnglishVoices();
+
+            if (voices.length === 0) return null;
+
+            const lowerName = voice => voice.name.toLowerCase();
+
+            if (preset === "us-clear") {
+                return (
+                    voices.find(voice => voice.lang === "en-US" && lowerName(voice).includes("samantha")) ||
+                    voices.find(voice => voice.lang === "en-US" && lowerName(voice).includes("google")) ||
+                    voices.find(voice => voice.lang === "en-US" && lowerName(voice).includes("aria")) ||
+                    voices.find(voice => voice.lang === "en-US" && lowerName(voice).includes("zira")) ||
+                    voices.find(voice => voice.lang === "en-US") ||
+                    voices[0]
+                );
+            }
+
+            if (preset === "us-slow") {
+                return (
+                    voices.find(voice => voice.lang === "en-US" && lowerName(voice).includes("samantha")) ||
+                    voices.find(voice => voice.lang === "en-US" && lowerName(voice).includes("google")) ||
+                    voices.find(voice => voice.lang === "en-US") ||
+                    voices[0]
+                );
+            }
+
+            if (preset === "gb-clear") {
+                return (
+                    voices.find(voice => voice.lang === "en-GB" && lowerName(voice).includes("daniel")) ||
+                    voices.find(voice => voice.lang === "en-GB" && lowerName(voice).includes("google")) ||
+                    voices.find(voice => voice.lang === "en-GB") ||
+                    voices.find(voice => voice.lang === "en-US") ||
+                    voices[0]
+                );
+            }
+
+            return voices.find(voice => voice.lang === "en-US") || voices[0];
+        }
+
+        function saveVoiceSetting() {
+            const presetSelect = document.getElementById("voice-preset");
+            const rateSelect = document.getElementById("speech-rate");
+
+            if (presetSelect) {
+                localStorage.setItem("voicePreset", presetSelect.value);
+            }
+
+            if (rateSelect) {
+                localStorage.setItem("speechRate", rateSelect.value);
+            }
+
+            updateVoiceInfo();
+        }
+
+        function updateVoiceInfo() {
+            const info = document.getElementById("voice-info");
+            if (!info) return;
+
+            const preset = getVoicePreset();
+            const selectedVoice = findVoiceByPreset(preset);
+
+            if (!selectedVoice) {
+                info.innerText = "사용 가능한 영어 음성이 없습니다. 브라우저 또는 운영체제 음성 설정을 확인하세요.";
+                return;
+            }
+
+            let presetName = "미국식 또박또박";
+
+            if (preset === "us-slow") presetName = "미국식 느리게";
+            if (preset === "gb-clear") presetName = "영국식 또박또박";
+
+            info.innerText = `${presetName} · 실제 사용 음성: ${selectedVoice.name} (${selectedVoice.lang})`;
+        }
+
+        function initVoiceSetting() {
+            const presetSelect = document.getElementById("voice-preset");
+            const rateSelect = document.getElementById("speech-rate");
+
+            const savedPreset = localStorage.getItem("voicePreset");
+            const savedRate = localStorage.getItem("speechRate");
+
+            if (presetSelect && savedPreset) {
+                presetSelect.value = savedPreset;
+            }
+
+            if (rateSelect && savedRate) {
+                rateSelect.value = savedRate;
+            }
+
+            updateVoiceInfo();
+        }
+
+        if ("speechSynthesis" in window) {
+            window.speechSynthesis.onvoiceschanged = function() {
+                updateVoiceInfo();
+            };
         }
 
         function speakText(text) {
@@ -1399,13 +1446,19 @@ important, 중요한, Adjective"></textarea>
 
             window.speechSynthesis.cancel();
 
+            const preset = getVoicePreset();
+            const selectedVoice = findVoiceByPreset(preset);
+
             const utterance = new SpeechSynthesisUtterance(speechText);
             utterance.lang = "en-US";
-            utterance.rate = getSpeechRate();
             utterance.pitch = 1;
             utterance.volume = 1;
 
-            const selectedVoice = getSelectedVoice();
+            if (preset === "us-slow") {
+                utterance.rate = 0.72;
+            } else {
+                utterance.rate = getSpeechRate();
+            }
 
             if (selectedVoice) {
                 utterance.voice = selectedVoice;
@@ -1450,23 +1503,6 @@ important, 중요한, Adjective"></textarea>
             setTimeout(() => {
                 speakCurrentQuizWord();
             }, 300);
-        }
-
-        function initVoiceSetting() {
-            const rateSelect = document.getElementById("speech-rate");
-            const savedRate = localStorage.getItem("speechRate");
-
-            if (rateSelect && savedRate) {
-                rateSelect.value = savedRate;
-            }
-
-            populateVoiceOptions();
-        }
-
-        if ("speechSynthesis" in window) {
-            window.speechSynthesis.onvoiceschanged = function() {
-                populateVoiceOptions();
-            };
         }
 
         function changeQuizMode() {
