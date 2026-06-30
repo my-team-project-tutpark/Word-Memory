@@ -7,6 +7,95 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <style>
+        :root {
+            --brand: #4f46e5;
+            --brand-dark: #3730a3;
+            --ink: #111827;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+            --soft: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at 10% 10%, rgba(99, 102, 241, 0.15), transparent 30%),
+                radial-gradient(circle at 90% 5%, rgba(56, 189, 248, 0.12), transparent 28%),
+                linear-gradient(180deg, #f8fafc 0%, #eef2ff 45%, #f8fafc 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            box-shadow: 0 24px 80px rgba(15, 23, 42, 0.09);
+            backdrop-filter: blur(18px);
+        }
+
+        .app-card {
+            background: white;
+            border: 1px solid rgba(226, 232, 240, 0.9);
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+            border-radius: 24px;
+        }
+
+        .soft-card {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            border: 1px solid #e5e7eb;
+            border-radius: 20px;
+        }
+
+        .start-choice-card {
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            border-radius: 22px;
+            padding: 20px;
+            text-align: left;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .start-choice-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 35px rgba(79, 70, 229, 0.11);
+            border-color: #c7d2fe;
+        }
+
+        .primary-action {
+            background: linear-gradient(135deg, #4f46e5, #2563eb);
+            color: white;
+            box-shadow: 0 14px 30px rgba(79, 70, 229, 0.26);
+        }
+
+        .primary-action:hover {
+            filter: brightness(0.97);
+        }
+
+        .nav-pill {
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 14px;
+            color: #475569;
+            transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+        }
+
+        .nav-pill:hover {
+            background: #eef2ff;
+            color: #3730a3;
+            transform: translateY(-1px);
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
         .correct-pop {
             animation: correctPop 0.45s ease;
         }
@@ -42,162 +131,211 @@
     </style>
 </head>
 
-<body class="bg-gray-50 text-gray-800 min-h-screen">
+<body class="text-slate-800 min-h-screen">
 
-    <section id="start-screen" class="min-h-screen flex items-center justify-center px-4">
-        <div class="bg-white max-w-4xl w-full rounded-3xl shadow-sm border border-gray-100 p-8">
-            <h1 class="text-3xl font-extrabold text-center text-gray-900 mb-2">🧠 Word Memory</h1>
-            <p class="text-center text-gray-500 mb-8">시작 방식을 선택해야 서비스를 사용할 수 있습니다.</p>
+    <section id="start-screen" class="min-h-screen flex items-center justify-center px-4 py-10">
+        <div class="glass-card max-w-6xl w-full rounded-[32px] p-6 md:p-10">
+            <div class="grid lg:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                    <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 border border-indigo-100 px-3 py-1.5 rounded-full text-sm font-bold">
+                        영어 단어 반복 학습 플랫폼
+                    </div>
 
-            <div class="grid md:grid-cols-4 gap-4 mb-8">
-                <button onclick="showStartPanel('admin')" class="bg-gray-900 text-white rounded-2xl p-5 font-bold hover:bg-black">
-                    관리자 로그인
-                </button>
+                    <div>
+                        <h1 class="text-4xl md:text-6xl font-black tracking-tight text-slate-950 leading-tight">
+                            Word<br class="hidden md:block"> Memory
+                        </h1>
+                        <p class="mt-5 text-lg text-slate-500 leading-8 max-w-xl">
+                            단어 세트를 고르고, 퀴즈를 풀고, 틀린 단어를 다시 복습하는 흐름에 집중한 단어 암기 사이트입니다.
+                        </p>
+                    </div>
 
-                <button onclick="enterAsGuest()" class="bg-indigo-600 text-white rounded-2xl p-5 font-bold hover:bg-indigo-700">
-                    비회원으로 시작
-                </button>
+                    <div class="grid sm:grid-cols-3 gap-3">
+                        <div class="soft-card p-4">
+                            <p class="text-2xl font-black text-indigo-600">01</p>
+                            <p class="mt-1 text-sm font-bold">세트 선택</p>
+                            <p class="text-xs text-slate-500 mt-1">원하는 단어장으로 시작</p>
+                        </div>
+                        <div class="soft-card p-4">
+                            <p class="text-2xl font-black text-blue-600">02</p>
+                            <p class="mt-1 text-sm font-bold">퀴즈 학습</p>
+                            <p class="text-xs text-slate-500 mt-1">뜻·단어 방향 선택</p>
+                        </div>
+                        <div class="soft-card p-4">
+                            <p class="text-2xl font-black text-rose-600">03</p>
+                            <p class="mt-1 text-sm font-bold">오답 복습</p>
+                            <p class="text-xs text-slate-500 mt-1">틀린 단어 다시 확인</p>
+                        </div>
+                    </div>
+                </div>
 
-                <button onclick="showStartPanel('login')" class="bg-blue-600 text-white rounded-2xl p-5 font-bold hover:bg-blue-700">
-                    로그인
-                </button>
+                <div class="app-card p-6 md:p-7">
+                    <div class="mb-6">
+                        <p class="text-sm text-slate-400 font-bold">START</p>
+                        <h2 class="text-2xl font-black text-slate-950 mt-1">학습 방식 선택</h2>
+                        <p class="text-sm text-slate-500 mt-2">회원가입 없이 체험하거나, 로그인해서 나만의 세트를 관리할 수 있습니다.</p>
+                    </div>
 
-                <button onclick="showStartPanel('signup')" class="bg-green-600 text-white rounded-2xl p-5 font-bold hover:bg-green-700">
-                    회원가입
-                </button>
-            </div>
+                    <div class="space-y-3">
+                        <button onclick="enterAsGuest()" class="start-choice-card primary-action w-full">
+                            <div class="flex items-center justify-between gap-4">
+                                <div>
+                                    <p class="text-lg font-black">비회원으로 바로 시작</p>
+                                    <p class="text-sm text-indigo-100 mt-1">기본 제공 세트로 빠르게 체험</p>
+                                </div>
+                                <span class="text-2xl">→</span>
+                            </div>
+                        </button>
 
-            <div id="start-admin-panel" class="start-panel hidden bg-gray-50 border border-gray-200 rounded-2xl p-5">
-                <h2 class="font-bold text-lg mb-3">관리자 로그인</h2>
-                <input id="start-admin-code" type="password" class="w-full px-3 py-2 border rounded-lg mb-3" placeholder="관리자 코드">
-                <button onclick="adminLoginFromStart()" class="w-full bg-gray-900 text-white py-2.5 rounded-lg font-semibold">관리자로 시작</button>
-            </div>
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <button onclick="showStartPanel('login')" class="start-choice-card w-full">
+                                <p class="text-lg font-black text-slate-900">로그인</p>
+                                <p class="text-sm text-slate-500 mt-1">저장된 학습 기록 사용</p>
+                            </button>
 
-            <div id="start-login-panel" class="start-panel hidden bg-gray-50 border border-gray-200 rounded-2xl p-5">
-                <h2 class="font-bold text-lg mb-3">로그인</h2>
-                <input id="start-login-username" class="w-full px-3 py-2 border rounded-lg mb-2" placeholder="아이디">
-                <input id="start-login-password" type="password" class="w-full px-3 py-2 border rounded-lg mb-3" placeholder="비밀번호">
-                <button onclick="loginFromStart()" class="w-full bg-blue-600 text-white py-2.5 rounded-lg font-semibold">로그인하고 시작</button>
-            </div>
+                            <button onclick="showStartPanel('signup')" class="start-choice-card w-full">
+                                <p class="text-lg font-black text-slate-900">회원가입</p>
+                                <p class="text-sm text-slate-500 mt-1">내 단어 세트 만들기</p>
+                            </button>
+                        </div>
+                    </div>
 
-            <div id="start-signup-panel" class="start-panel hidden bg-gray-50 border border-gray-200 rounded-2xl p-5">
-                <h2 class="font-bold text-lg mb-3">회원가입</h2>
-                <input id="start-signup-username" class="w-full px-3 py-2 border rounded-lg mb-2" placeholder="아이디">
-                <input id="start-signup-password" type="password" class="w-full px-3 py-2 border rounded-lg mb-2" placeholder="비밀번호">
-                <input id="start-signup-admin-code" type="password" class="w-full px-3 py-2 border rounded-lg mb-3" placeholder="관리자 코드 있으면 입력">
-                <button onclick="signupFromStart()" class="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold">가입하고 시작</button>
+                    <div id="start-admin-panel" class="start-panel hidden mt-5 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                        <h2 class="font-black text-lg mb-2 text-slate-900">관리자 전용 로그인</h2>
+                        <p class="text-xs text-slate-500 mb-3">일반 사용자는 이 기능을 사용할 필요가 없습니다.</p>
+                        <input id="start-admin-code" type="password" class="w-full px-3 py-3 border border-slate-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="관리자 코드">
+                        <button onclick="adminLoginFromStart()" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold hover:bg-black">관리자 화면으로 이동</button>
+                    </div>
+
+                    <div id="start-login-panel" class="start-panel hidden mt-5 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                        <h2 class="font-black text-lg mb-3 text-slate-900">로그인</h2>
+                        <input id="start-login-username" class="w-full px-3 py-3 border border-slate-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="아이디">
+                        <input id="start-login-password" type="password" class="w-full px-3 py-3 border border-slate-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="비밀번호">
+                        <button onclick="loginFromStart()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">로그인하고 시작</button>
+                    </div>
+
+                    <div id="start-signup-panel" class="start-panel hidden mt-5 bg-slate-50 border border-slate-200 rounded-2xl p-5">
+                        <h2 class="font-black text-lg mb-3 text-slate-900">회원가입</h2>
+                        <input id="start-signup-username" class="w-full px-3 py-3 border border-slate-200 rounded-xl mb-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="아이디">
+                        <input id="start-signup-password" type="password" class="w-full px-3 py-3 border border-slate-200 rounded-xl mb-3 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="비밀번호">
+                        <input id="start-signup-admin-code" type="password" class="hidden" value="">
+                        <button onclick="signupFromStart()" class="w-full bg-green-600 text-white py-3 rounded-xl font-bold hover:bg-green-700">가입하고 시작</button>
+                    </div>
+
+                    <div class="pt-5 mt-5 border-t border-slate-100 text-center">
+                        <button onclick="showStartPanel('admin')" class="text-xs text-slate-400 hover:text-slate-700 underline underline-offset-4">
+                            관리자 전용 접근
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <div id="app-screen" class="hidden">
-        <nav class="bg-indigo-600 text-white shadow-md">
-            <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-3">
-                <h1 class="text-xl font-bold">🧠 Word Memory</h1>
+        <nav class="sticky top-0 z-40 bg-white/85 backdrop-blur-xl border-b border-slate-200/70">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+                <button onclick="switchTab('sets')" class="flex items-center gap-2">
+                    <span class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black">W</span>
+                    <span class="text-lg font-black text-slate-950">Word Memory</span>
+                </button>
 
-                <div class="space-x-2 text-sm">
-                    <button onclick="switchTab('sets')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">세트 선택</button>
-                    <button onclick="switchTab('quiz')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">퀴즈</button>
-                    <button onclick="switchTab('words')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">단어 목록</button>
-                    <button onclick="switchTab('wrong')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">오답 노트</button>
-                    <button onclick="switchTab('add')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">단어 등록</button>
-                    <button onclick="switchTab('bulk')" class="px-3 py-1.5 rounded-md hover:bg-indigo-700">대량 등록</button>
-                    <button id="nav-admin-btn" onclick="switchTab('admin')" class="hidden px-3 py-1.5 rounded-md hover:bg-indigo-700">관리자</button>
-                    <button onclick="goStartScreen()" class="px-3 py-1.5 rounded-md bg-indigo-800 hover:bg-indigo-900">처음 화면</button>
+                <div class="flex flex-wrap gap-1 text-sm items-center">
+                    <button onclick="switchTab('sets')" class="nav-pill">세트 선택</button>
+                    <button onclick="switchTab('quiz')" class="nav-pill">퀴즈</button>
+                    <button onclick="switchTab('words')" class="nav-pill">단어 목록</button>
+                    <button onclick="switchTab('wrong')" class="nav-pill">오답 노트</button>
+                    <button onclick="switchTab('add')" class="nav-pill">단어 등록</button>
+                    <button onclick="switchTab('bulk')" class="nav-pill">대량 등록</button>
+                    <button id="nav-admin-btn" onclick="switchTab('admin')" class="hidden nav-pill bg-slate-900 text-white hover:bg-slate-800 hover:text-white">관리자</button>
+                    <button onclick="goStartScreen()" class="ml-1 px-3 py-2 rounded-full bg-slate-100 text-slate-600 text-sm font-bold hover:bg-slate-200">처음 화면</button>
                 </div>
             </div>
         </nav>
 
-        <main class="max-w-6xl mx-auto px-4 py-8">
+        <main class="max-w-7xl mx-auto px-4 py-8">
 
-            <div class="bg-white border border-gray-100 rounded-2xl shadow-sm p-4 mb-6 flex flex-wrap justify-between items-center gap-3">
-                <div>
-                    <p class="text-sm text-gray-500">현재 사용자</p>
-                    <p id="login-status" class="font-bold text-gray-900">비회원</p>
+            <section class="glass-card rounded-[28px] p-5 md:p-6 mb-7">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+                    <div>
+                        <p class="text-sm font-bold text-indigo-600">LEARNING DASHBOARD</p>
+                        <h2 class="text-2xl md:text-3xl font-black text-slate-950 mt-1">오늘도 단어 기억을 쌓아보세요</h2>
+                        <p class="text-sm text-slate-500 mt-2">세트를 고른 뒤 퀴즈를 풀면 오답 노트에 틀린 단어가 자동으로 모입니다.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 min-w-full lg:min-w-[560px]">
+                        <div class="soft-card p-4">
+                            <p class="text-xs text-slate-400 font-bold">사용자</p>
+                            <p id="login-status" class="font-black text-slate-900 mt-1 truncate">비회원</p>
+                        </div>
+                        <div class="soft-card p-4">
+                            <p class="text-xs text-slate-400 font-bold">현재 세트</p>
+                            <p id="current-set-status" class="font-black text-indigo-600 mt-1 truncate">선택된 세트 없음</p>
+                        </div>
+                        <div class="soft-card p-4">
+                            <p class="text-xs text-slate-400 font-bold">세트 수</p>
+                            <p id="dashboard-sets-count" class="font-black text-slate-900 mt-1">0</p>
+                        </div>
+                        <div class="soft-card p-4">
+                            <p class="text-xs text-slate-400 font-bold">오답</p>
+                            <p id="dashboard-wrong-count" class="font-black text-rose-600 mt-1">0</p>
+                        </div>
+                    </div>
                 </div>
 
-                <div>
-                    <p class="text-sm text-gray-500">현재 세트</p>
-                    <p id="current-set-status" class="font-bold text-indigo-600">선택된 세트 없음</p>
+                <div class="hidden mt-4" id="admin-inline-tools">
+                    <input id="global-admin-code" type="password" placeholder="관리자 코드" class="px-3 py-2 border border-slate-300 rounded-xl text-sm">
+                    <button onclick="saveAdminCode()" class="bg-slate-900 text-white px-3 py-2 rounded-xl text-sm font-bold">관리자 확인</button>
+                    <button onclick="clearAdminCode()" class="bg-slate-100 text-slate-700 px-3 py-2 rounded-xl text-sm font-bold">관리자 해제</button>
                 </div>
 
-                <div class="flex gap-2 items-center">
-                    <input id="global-admin-code" type="password" placeholder="관리자 코드"
-                           class="px-3 py-2 border border-gray-300 rounded-lg text-sm">
-
-                    <button onclick="saveAdminCode()" class="bg-gray-800 text-white px-3 py-2 rounded-lg text-sm">
-                        관리자 확인
-                    </button>
-
-                    <button onclick="clearAdminCode()" class="bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-sm">
-                        관리자 해제
-                    </button>
-
-                    <button onclick="logout()" class="bg-red-500 text-white px-3 py-2 rounded-lg text-sm">
-                        로그아웃
-                    </button>
+                <div class="mt-5 flex justify-end">
+                    <button onclick="logout()" class="bg-rose-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-rose-600">로그아웃</button>
                 </div>
-            </div>
+            </section>
 
             <section id="tab-sets" class="tab-content">
                 <div class="grid lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <div class="flex flex-wrap justify-between items-center mb-4 gap-3">
-                            <h2 class="text-xl font-bold">📚 단어 세트 선택</h2>
+                    <div class="lg:col-span-2 app-card p-6">
+                        <div class="flex flex-wrap justify-between items-center mb-5 gap-3">
+                            <div>
+                                <p class="text-sm text-indigo-600 font-bold">WORD SETS</p>
+                                <h2 class="text-2xl font-black text-slate-950">단어 세트 선택</h2>
+                            </div>
 
-                            <div class="flex gap-2">
-                                <input id="set-search-input"
-                                       oninput="renderSets()"
-                                       class="px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                                       placeholder="세트 이름 검색">
-
-                                <button onclick="fetchSets()" class="bg-gray-100 px-3 py-2 rounded-lg text-sm">
-                                    새로고침
-                                </button>
+                            <div class="flex gap-2 w-full sm:w-auto">
+                                <input id="set-search-input" oninput="renderSets()" class="px-4 py-3 border border-slate-200 rounded-xl text-sm w-full sm:w-56 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="세트 이름 검색">
+                                <button onclick="fetchSets()" class="bg-slate-100 px-4 py-3 rounded-xl text-sm font-bold hover:bg-slate-200">새로고침</button>
                             </div>
                         </div>
 
                         <div id="sets-list" class="grid md:grid-cols-2 gap-4"></div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                        <h2 class="text-xl font-bold mb-4">➕ 세트 만들기</h2>
+                    <div class="app-card p-6">
+                        <p class="text-sm text-indigo-600 font-bold">CREATE</p>
+                        <h2 class="text-2xl font-black text-slate-950 mb-5">세트 만들기</h2>
 
                         <div class="space-y-3">
-                            <input id="set-title" class="w-full px-3 py-2 border rounded-lg" placeholder="세트 이름">
-                            <textarea id="set-description" class="w-full px-3 py-2 border rounded-lg" rows="3" placeholder="세트 설명"></textarea>
+                            <input id="set-title" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="세트 이름">
+                            <textarea id="set-description" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="3" placeholder="세트 설명"></textarea>
 
-                            <select id="set-visibility" class="w-full px-3 py-2 border rounded-lg bg-white" onchange="toggleSetPassword()">
+                            <select id="set-visibility" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500" onchange="toggleSetPassword()">
                                 <option value="public">공개</option>
                                 <option value="private">비공개</option>
                             </select>
 
-                            <input id="set-password" type="password" class="w-full px-3 py-2 border rounded-lg hidden" placeholder="비공개 세트 암호">
+                            <input id="set-password" type="password" class="w-full px-4 py-3 border border-slate-200 rounded-xl hidden focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="비공개 세트 암호">
 
-                            <div id="admin-set-options" class="hidden space-y-2 border border-gray-200 rounded-xl p-3 bg-gray-50">
-                                <label class="flex items-center gap-2 text-sm">
-                                    <input id="set-admin-check" type="checkbox">
-                                    관리자 세트로 만들기
-                                </label>
-
-                                <label class="flex items-center gap-2 text-sm">
-                                    <input id="set-admin-approved" type="checkbox">
-                                    관리자 승인하기
-                                </label>
-
-                                <label class="flex items-center gap-2 text-sm">
-                                    <input id="set-guest-only" type="checkbox">
-                                    비회원 전용 세트로 지정
-                                </label>
+                            <div id="admin-set-options" class="hidden space-y-2 border border-slate-200 rounded-2xl p-4 bg-slate-50">
+                                <label class="flex items-center gap-2 text-sm"><input id="set-admin-check" type="checkbox"> 관리자 세트로 만들기</label>
+                                <label class="flex items-center gap-2 text-sm"><input id="set-admin-approved" type="checkbox"> 관리자 승인하기</label>
+                                <label class="flex items-center gap-2 text-sm"><input id="set-guest-only" type="checkbox"> 비회원 전용 세트로 지정</label>
                             </div>
 
-                            <button onclick="createSet()" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold">
-                                세트 생성
-                            </button>
+                            <button onclick="createSet()" class="w-full primary-action py-3 rounded-xl font-black">세트 생성</button>
 
-                            <p id="set-create-help" class="text-xs text-gray-500">
-                                일반 회원은 일반 공개/비공개 세트만 만들 수 있습니다.
-                            </p>
+                            <p id="set-create-help" class="text-xs text-slate-500 leading-5">일반 회원은 일반 공개/비공개 세트만 만들 수 있습니다.</p>
                         </div>
                     </div>
                 </div>
@@ -205,23 +343,21 @@
 
             <section id="tab-admin" class="tab-content hidden">
                 <div class="space-y-6">
-
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="app-card p-6">
                         <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
-                            <h2 class="text-xl font-bold">🔒 관리자 전용 세트 관리</h2>
-                            <button onclick="fetchAdminSets()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm">
-                                관리자 세트 불러오기
-                            </button>
+                            <div>
+                                <p class="text-sm text-slate-500 font-bold">ADMIN</p>
+                                <h2 class="text-2xl font-black text-slate-950">관리자 전용 세트 관리</h2>
+                            </div>
+                            <button onclick="fetchAdminSets()" class="bg-indigo-600 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-indigo-700">관리자 세트 불러오기</button>
                         </div>
 
-                        <p class="text-sm text-gray-500 mb-4">
-                            여기서 관리자 세트를 승인하거나, 비회원 전용 세트로 지정할 수 있습니다.
-                        </p>
+                        <p class="text-sm text-slate-500 mb-4">여기서 관리자 세트를 승인하거나, 비회원 전용 세트로 지정할 수 있습니다.</p>
 
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="border-b text-gray-400 text-sm">
+                                    <tr class="border-b text-slate-400 text-sm">
                                         <th class="py-3 px-2">ID</th>
                                         <th class="py-3 px-2">제목</th>
                                         <th class="py-3 px-2">설명</th>
@@ -233,27 +369,26 @@
                                         <th class="py-3 px-2 text-center">삭제</th>
                                     </tr>
                                 </thead>
-                                <tbody id="admin-sets-list" class="divide-y divide-gray-100 text-sm"></tbody>
+                                <tbody id="admin-sets-list" class="divide-y divide-slate-100 text-sm"></tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <div class="app-card p-6">
                         <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
-                            <h2 class="text-xl font-bold">👥 회원 관리</h2>
-                            <button onclick="fetchAdminUsers()" class="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm">
-                                회원 목록 불러오기
-                            </button>
+                            <div>
+                                <p class="text-sm text-slate-500 font-bold">USERS</p>
+                                <h2 class="text-2xl font-black text-slate-950">회원 관리</h2>
+                            </div>
+                            <button onclick="fetchAdminUsers()" class="bg-slate-900 text-white px-4 py-3 rounded-xl text-sm font-bold hover:bg-black">회원 목록 불러오기</button>
                         </div>
 
-                        <p class="text-sm text-gray-500 mb-4">
-                            관리자는 일반 회원을 강제로 탈퇴시킬 수 있습니다. 관리자 계정은 보호됩니다.
-                        </p>
+                        <p class="text-sm text-slate-500 mb-4">관리자는 일반 회원을 강제로 탈퇴시킬 수 있습니다. 관리자 계정은 보호됩니다.</p>
 
                         <div class="overflow-x-auto">
                             <table class="w-full text-left border-collapse">
                                 <thead>
-                                    <tr class="border-b text-gray-400 text-sm">
+                                    <tr class="border-b text-slate-400 text-sm">
                                         <th class="py-3 px-2">ID</th>
                                         <th class="py-3 px-2">아이디</th>
                                         <th class="py-3 px-2">권한</th>
@@ -262,73 +397,57 @@
                                         <th class="py-3 px-2 text-center">강제 탈퇴</th>
                                     </tr>
                                 </thead>
-                                <tbody id="admin-users-list" class="divide-y divide-gray-100 text-sm"></tbody>
+                                <tbody id="admin-users-list" class="divide-y divide-slate-100 text-sm"></tbody>
                             </table>
                         </div>
                     </div>
-
                 </div>
             </section>
 
             <section id="tab-quiz" class="tab-content hidden">
-                <div id="quiz-card" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center max-w-md mx-auto">
-
-                    <div class="mb-4">
-                        <select id="quiz-mode" onchange="changeQuizMode()"
-                                class="px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                <div id="quiz-card" class="app-card p-6 md:p-8 text-center max-w-xl mx-auto">
+                    <div class="flex justify-center mb-5">
+                        <select id="quiz-mode" onchange="changeQuizMode()" class="px-4 py-3 border border-slate-200 rounded-full text-sm bg-white font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="word-to-meaning">단어 보고 뜻 맞추기</option>
                             <option value="meaning-to-word">뜻 보고 단어 맞추기</option>
                             <option value="mixed">섞어서 출제</option>
                         </select>
                     </div>
 
-                    <p id="quiz-mode-label" class="text-sm text-gray-500 mb-2">
-                        단어를 보고 뜻을 맞춰보세요.
-                    </p>
-
-                    <span id="quiz-pos" class="text-xs font-semibold uppercase tracking-wider bg-indigo-50 text-indigo-600 px-3 py-1 rounded-full">-</span>
-
-                    <h2 id="quiz-word" class="text-4xl font-extrabold text-gray-900 mt-4 mb-2">세트를 선택해주세요</h2>
-
-                    <p id="quiz-example" class="text-sm text-gray-500 italic mb-2">세트 선택 탭에서 단어 세트를 먼저 선택하세요.</p>
-                    <p id="quiz-example-meaning" class="text-sm text-gray-500 mb-6"></p>
+                    <p id="quiz-mode-label" class="text-sm text-slate-500 mb-3">단어를 보고 뜻을 맞춰보세요.</p>
+                    <span id="quiz-pos" class="badge bg-indigo-50 text-indigo-600">-</span>
+                    <h2 id="quiz-word" class="text-4xl md:text-5xl font-black text-slate-950 mt-5 mb-3">세트를 선택해주세요</h2>
+                    <p id="quiz-example" class="text-sm text-slate-500 italic mb-2">세트 선택 탭에서 단어 세트를 먼저 선택하세요.</p>
+                    <p id="quiz-example-meaning" class="text-sm text-slate-500 mb-6"></p>
 
                     <div class="space-y-3">
-                        <input type="text" id="user-answer" placeholder="뜻을 입력하세요"
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-center text-lg">
-
-                        <button id="submit-btn" onclick="submitAnswer()" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700">
-                            정답 확인
-                        </button>
-
-                        <button onclick="restartQuizPool()" class="w-full bg-yellow-100 text-yellow-800 py-2.5 rounded-xl font-semibold hover:bg-yellow-200">
-                            처음부터 다시 풀기
-                        </button>
-
-                        <button onclick="fetchRandomQuiz()" class="w-full bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold hover:bg-gray-200">
-                            다음 단어
-                        </button>
+                        <input type="text" id="user-answer" placeholder="정답을 입력하세요" class="w-full px-4 py-4 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none text-center text-lg font-bold">
+                        <button id="submit-btn" onclick="submitAnswer()" class="w-full primary-action py-4 rounded-2xl font-black">정답 확인</button>
+                        <div class="grid sm:grid-cols-2 gap-3">
+                            <button onclick="restartQuizPool()" class="w-full bg-amber-100 text-amber-800 py-3 rounded-2xl font-bold hover:bg-amber-200">처음부터 다시 풀기</button>
+                            <button onclick="fetchRandomQuiz()" class="w-full bg-slate-100 text-slate-700 py-3 rounded-2xl font-bold hover:bg-slate-200">다음 단어</button>
+                        </div>
                     </div>
 
-                    <p class="mt-4 text-xs text-gray-400">
-                        Enter: 정답 확인 / Space: 다음 단어
-                    </p>
-
-                    <div id="quiz-feedback" class="mt-4 p-3 rounded-xl text-sm font-medium hidden"></div>
+                    <p class="mt-4 text-xs text-slate-400">Enter: 정답 확인 / Space: 다음 단어</p>
+                    <div id="quiz-feedback" class="mt-4 p-4 rounded-2xl text-sm font-bold hidden"></div>
                 </div>
             </section>
 
             <section id="tab-words" class="tab-content hidden">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold mb-4">
-                        저장된 단어
-                        <span id="words-count-badge" class="text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full">0</span>
-                    </h2>
+                <div class="app-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm text-indigo-600 font-bold">WORDS</p>
+                            <h2 class="text-2xl font-black text-slate-950">저장된 단어</h2>
+                        </div>
+                        <span id="words-count-badge" class="badge bg-indigo-50 text-indigo-600">0</span>
+                    </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b text-gray-400 text-sm">
+                                <tr class="border-b text-slate-400 text-sm">
                                     <th class="py-3 px-2">단어</th>
                                     <th class="py-3 px-2">품사</th>
                                     <th class="py-3 px-2">뜻</th>
@@ -337,23 +456,26 @@
                                     <th class="py-3 px-2 text-center">삭제</th>
                                 </tr>
                             </thead>
-                            <tbody id="words-list" class="divide-y divide-gray-100 text-sm"></tbody>
+                            <tbody id="words-list" class="divide-y divide-slate-100 text-sm"></tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
             <section id="tab-wrong" class="tab-content hidden">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h2 class="text-xl font-bold mb-4">
-                        오답 노트
-                        <span id="wrong-count-badge" class="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">0</span>
-                    </h2>
+                <div class="app-card p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <div>
+                            <p class="text-sm text-rose-600 font-bold">REVIEW</p>
+                            <h2 class="text-2xl font-black text-slate-950">오답 노트</h2>
+                        </div>
+                        <span id="wrong-count-badge" class="badge bg-rose-50 text-rose-600">0</span>
+                    </div>
 
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
-                                <tr class="border-b text-gray-400 text-sm">
+                                <tr class="border-b text-slate-400 text-sm">
                                     <th class="py-3 px-2">단어</th>
                                     <th class="py-3 px-2">품사</th>
                                     <th class="py-3 px-2">정답 뜻</th>
@@ -361,58 +483,50 @@
                                     <th class="py-3 px-2 text-right">최근 오답일</th>
                                 </tr>
                             </thead>
-                            <tbody id="wrong-notes-list" class="divide-y divide-gray-100 text-sm"></tbody>
+                            <tbody id="wrong-notes-list" class="divide-y divide-slate-100 text-sm"></tbody>
                         </table>
                     </div>
                 </div>
             </section>
 
             <section id="tab-add" class="tab-content hidden">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-md mx-auto">
-                    <h2 class="text-xl font-bold mb-6">➕ 새 단어 추가</h2>
+                <div class="app-card p-6 max-w-lg mx-auto">
+                    <p class="text-sm text-green-600 font-bold">ADD WORD</p>
+                    <h2 class="text-2xl font-black text-slate-950 mb-6">새 단어 추가</h2>
 
                     <form id="word-form" onsubmit="saveWord(event)" class="space-y-4">
-                        <input type="text" id="form-word" required class="w-full px-3 py-2 border rounded-lg" placeholder="단어 *">
-                        <input type="text" id="form-meaning" required class="w-full px-3 py-2 border rounded-lg" placeholder="뜻 *">
+                        <input type="text" id="form-word" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="단어 *">
+                        <input type="text" id="form-meaning" required class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="뜻 *">
 
-                        <select id="form-pos" class="w-full px-3 py-2 border rounded-lg bg-white">
+                        <select id="form-pos" class="w-full px-4 py-3 border border-slate-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
                             <option value="">품사 선택 안 함</option>
-                            <option value="Noun">명사</option>
-                            <option value="Verb">동사</option>
-                            <option value="Adjective">형용사</option>
-                            <option value="Adverb">부사</option>
+                            <option value="명사">명사</option>
+                            <option value="동사">동사</option>
+                            <option value="형용사">형용사</option>
+                            <option value="부사">부사</option>
                         </select>
 
-                        <textarea id="form-example" rows="2" class="w-full px-3 py-2 border rounded-lg" placeholder="예문 없어도 됨"></textarea>
-                        <textarea id="form-example-meaning" rows="2" class="w-full px-3 py-2 border rounded-lg" placeholder="예문 뜻 없어도 됨"></textarea>
+                        <textarea id="form-example" rows="2" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="예문 없어도 됨"></textarea>
+                        <textarea id="form-example-meaning" rows="2" class="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="예문 뜻 없어도 됨"></textarea>
 
-                        <button type="submit" class="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold">
-                            단어 저장
-                        </button>
+                        <button type="submit" class="w-full bg-green-600 text-white py-3 rounded-xl font-black hover:bg-green-700">단어 저장</button>
                     </form>
                 </div>
             </section>
 
             <section id="tab-bulk" class="tab-content hidden">
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto">
-                    <h2 class="text-xl font-bold mb-4">📋 단어 대량 등록</h2>
-
-                    <p class="text-sm text-gray-500 mb-3">
-                        한 줄에 하나씩 입력하세요.<br>
-                        예: apple, 사과, Noun, I eat an apple., 나는 사과를 먹는다.
+                <div class="app-card p-6 max-w-2xl mx-auto">
+                    <p class="text-sm text-green-600 font-bold">BULK ADD</p>
+                    <h2 class="text-2xl font-black text-slate-950 mb-3">단어 대량 등록</h2>
+                    <p class="text-sm text-slate-500 mb-4 leading-6">
+                        한 줄에 하나씩 입력하세요. 쉼표, 세로선(|), 탭, 공백 구분을 지원합니다.<br>
+                        예: apple, 사과, 명사, I eat an apple., 나는 사과를 먹는다.
                     </p>
 
-                    <textarea id="bulk-input" rows="10"
-                              class="w-full px-4 py-3 border rounded-xl"
-                              placeholder="apple, 사과, Noun, I eat an apple., 나는 사과를 먹는다.
-study 공부하다
-important, 중요한, Adjective"></textarea>
+                    <textarea id="bulk-input" rows="10" class="w-full px-4 py-4 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="apple, 사과, 명사, I eat an apple., 나는 사과를 먹는다.&#10;study, 공부하다, 동사&#10;important, 중요한, 형용사"></textarea>
 
-                    <button onclick="saveBulkWords()" class="mt-4 w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold">
-                        여러 단어 저장
-                    </button>
-
-                    <div id="bulk-result" class="mt-4 p-3 rounded-xl text-sm font-medium hidden"></div>
+                    <button onclick="saveBulkWords()" class="mt-4 w-full bg-green-600 text-white py-3 rounded-xl font-black hover:bg-green-700">여러 단어 저장</button>
+                    <div id="bulk-result" class="mt-4 p-4 rounded-2xl text-sm font-bold hidden"></div>
                 </div>
             </section>
 
@@ -463,6 +577,7 @@ important, 중요한, Adjective"></textarea>
 
             updateStatus();
             updateAdminUI();
+            updateDashboardCounts();
             fetchSets();
             switchTab("sets");
         }
@@ -584,16 +699,19 @@ important, 중요한, Adjective"></textarea>
             const adminOptions = document.getElementById("admin-set-options");
             const adminButton = document.getElementById("nav-admin-btn");
             const helpText = document.getElementById("set-create-help");
+            const adminInlineTools = document.getElementById("admin-inline-tools");
 
             if (!adminOptions || !adminButton || !helpText) return;
 
             if (adminVerified) {
                 adminOptions.classList.remove("hidden");
                 adminButton.classList.remove("hidden");
+                if (adminInlineTools) adminInlineTools.classList.remove("hidden");
                 helpText.innerText = "관리자는 관리자 세트, 승인 여부, 비회원 전용 세트를 설정할 수 있습니다.";
             } else {
                 adminOptions.classList.add("hidden");
                 adminButton.classList.add("hidden");
+                if (adminInlineTools) adminInlineTools.classList.add("hidden");
                 helpText.innerText = "일반 회원은 일반 공개/비공개 세트만 만들 수 있습니다.";
 
                 document.getElementById("set-admin-check").checked = false;
@@ -615,7 +733,7 @@ important, 중요한, Adjective"></textarea>
                     loginStatus.innerText = "관리자";
                 }
             } else if (currentUser && currentUser.role === "admin") {
-                loginStatus.innerText = `${currentUser.username} (관리자 계정 / 관리자 코드 미확인)`;
+                loginStatus.innerText = `${currentUser.username} (관리자 계정)`;
             } else if (currentUser) {
                 loginStatus.innerText = `${currentUser.username} (회원)`;
             } else {
@@ -629,6 +747,35 @@ important, 중요한, Adjective"></textarea>
             }
 
             updateAdminUI();
+            updateDashboardCounts();
+        }
+
+        function updateDashboardCounts() {
+            const setsCount = document.getElementById("dashboard-sets-count");
+            const wrongCount = document.getElementById("dashboard-wrong-count");
+            const wrongBadge = document.getElementById("wrong-count-badge");
+
+            if (setsCount) {
+                setsCount.innerText = allSets.length;
+            }
+
+            if (wrongCount && wrongBadge) {
+                wrongCount.innerText = wrongBadge.innerText || "0";
+            }
+        }
+
+        function escapeHTML(value) {
+            return String(value ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function selectSetFromCard(encodedSet) {
+            const setInfo = JSON.parse(decodeURIComponent(encodedSet));
+            selectSet(setInfo);
         }
 
         function switchTab(tabName) {
@@ -701,7 +848,8 @@ important, 중요한, Adjective"></textarea>
             adminVerified = false;
             localStorage.removeItem("adminCode");
             localStorage.setItem("adminVerified", "false");
-            document.getElementById("global-admin-code").value = "";
+            const adminInput = document.getElementById("global-admin-code");
+            if (adminInput) adminInput.value = "";
             updateStatus();
             fetchSets();
             alert("관리자 권한이 해제되었습니다.");
@@ -740,6 +888,7 @@ important, 중요한, Adjective"></textarea>
 
             allSets = sets;
             renderSets();
+            updateDashboardCounts();
         }
 
         function renderSets() {
@@ -752,7 +901,7 @@ important, 중요한, Adjective"></textarea>
             const filteredSets = allSets.filter(setInfo => {
                 const title = (setInfo.title || "").toLowerCase();
                 const description = (setInfo.description || "").toLowerCase();
-                const owner = (setInfo.owner_name || "관리자").toLowerCase();
+                const owner = (setInfo.owner_name || "기본 제공").toLowerCase();
 
                 return (
                     title.includes(keyword) ||
@@ -762,16 +911,28 @@ important, 중요한, Adjective"></textarea>
             });
 
             if (filteredSets.length === 0) {
-                list.innerHTML = `<p class="text-gray-400">검색 결과가 없습니다.</p>`;
+                list.innerHTML = `
+                    <div class="md:col-span-2 soft-card p-8 text-center">
+                        <p class="text-4xl mb-3">🔎</p>
+                        <p class="font-black text-slate-800">검색 결과가 없습니다.</p>
+                        <p class="text-sm text-slate-500 mt-1">다른 검색어를 입력하거나 새로고침을 눌러보세요.</p>
+                    </div>
+                `;
                 return;
             }
 
             filteredSets.forEach(setInfo => {
-                const owner = setInfo.owner_name || "관리자";
-                const visibilityText = setInfo.visibility === "private" ? "🔒 비공개" : "🌍 공개";
-                const adminSetText = setInfo.is_admin_set ? "⭐ 관리자 세트" : "";
-                const approvedText = setInfo.admin_approved ? "✅ 승인됨" : "🚫 미승인";
-                const guestOnlyText = setInfo.guest_only ? "👤 비회원 전용" : "";
+                const owner = escapeHTML(setInfo.owner_name || "기본 제공");
+                const visibilityText = setInfo.visibility === "private" ? "비공개" : "공개";
+                const visibilityClass = setInfo.visibility === "private"
+                    ? "bg-slate-100 text-slate-600"
+                    : "bg-emerald-50 text-emerald-700";
+                const sourceText = setInfo.is_admin_set ? "기본 제공" : "사용자 세트";
+                const sourceClass = setInfo.is_admin_set
+                    ? "bg-indigo-50 text-indigo-700"
+                    : "bg-blue-50 text-blue-700";
+                const guestText = setInfo.guest_only ? `<span class="badge bg-amber-50 text-amber-700">비회원 가능</span>` : "";
+                const encodedSet = encodeURIComponent(JSON.stringify(setInfo));
 
                 const canManage =
                     adminVerified ||
@@ -783,14 +944,14 @@ important, 중요한, Adjective"></textarea>
 
                 const manageButtons = canManage
                     ? `
-                        <div class="mt-3 flex gap-2">
+                        <div class="mt-4 flex gap-2">
                             <button onclick="editSet(${setInfo.set_id})"
-                                    class="bg-blue-500 text-white px-3 py-2 rounded-lg text-sm">
+                                    class="bg-blue-50 text-blue-700 border border-blue-100 px-3 py-2 rounded-xl text-sm font-bold hover:bg-blue-100">
                                 수정
                             </button>
 
                             <button onclick="deleteSet(${setInfo.set_id})"
-                                    class="bg-red-500 text-white px-3 py-2 rounded-lg text-sm">
+                                    class="bg-rose-50 text-rose-700 border border-rose-100 px-3 py-2 rounded-xl text-sm font-bold hover:bg-rose-100">
                                 삭제
                             </button>
                         </div>
@@ -798,16 +959,26 @@ important, 중요한, Adjective"></textarea>
                     : "";
 
                 list.innerHTML += `
-                    <div class="border border-gray-200 rounded-xl p-4 hover:bg-gray-50">
-                        <h3 class="font-bold text-lg">${setInfo.title}</h3>
-                        <p class="text-sm text-gray-500 mt-1">${setInfo.description || ""}</p>
-                        <p class="text-xs text-gray-400 mt-2">소유자: ${owner}</p>
-                        <p class="text-xs text-gray-400">${visibilityText} ${adminSetText}</p>
-                        <p class="text-xs text-gray-400">${approvedText} ${guestOnlyText}</p>
+                    <div class="soft-card p-5 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <h3 class="font-black text-lg text-slate-950">${escapeHTML(setInfo.title)}</h3>
+                                <p class="text-sm text-slate-500 mt-2 leading-6 line-clamp-2">${escapeHTML(setInfo.description || "설명 없음")}</p>
+                            </div>
+                            <span class="text-2xl">📘</span>
+                        </div>
 
-                        <button onclick='selectSet(${JSON.stringify(setInfo)})'
-                                class="mt-3 bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm">
-                            이 세트 사용
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <span class="badge ${visibilityClass}">${visibilityText}</span>
+                            <span class="badge ${sourceClass}">${sourceText}</span>
+                            ${guestText}
+                        </div>
+
+                        <p class="text-xs text-slate-400 mt-4">소유자: ${owner}</p>
+
+                        <button onclick="selectSetFromCard('${encodedSet}')"
+                                class="mt-4 w-full primary-action px-3 py-3 rounded-xl text-sm font-black">
+                            이 세트로 학습하기
                         </button>
 
                         ${manageButtons}
@@ -1532,7 +1703,7 @@ important, 중요한, Adjective"></textarea>
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="6" class="py-8 text-center text-gray-400">
-                            아직 저장된 단어가 없습니다.
+                            아직 저장된 단어가 없습니다. 단어 등록 탭에서 새 단어를 추가해보세요.
                         </td>
                     </tr>
                 `;
@@ -1591,13 +1762,15 @@ important, 중요한, Adjective"></textarea>
             const badge = document.getElementById("wrong-count-badge");
 
             badge.innerText = wrongNotes.length;
+            const dashboardWrongCount = document.getElementById("dashboard-wrong-count");
+            if (dashboardWrongCount) dashboardWrongCount.innerText = wrongNotes.length;
             tbody.innerHTML = "";
 
             if (wrongNotes.length === 0) {
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="5" class="py-8 text-center text-gray-400">
-                            오답 노트가 비어있습니다.
+                            오답 노트가 비어있습니다. 퀴즈를 풀면 틀린 단어가 여기에 모입니다.
                         </td>
                     </tr>
                 `;
@@ -1630,7 +1803,7 @@ important, 중요한, Adjective"></textarea>
 
             const word = document.getElementById("form-word").value.trim();
             const meaning = document.getElementById("form-meaning").value.trim();
-            const partOfSpeech = document.getElementById("form-pos").value;
+            const partOfSpeech = normalizePartOfSpeech(document.getElementById("form-pos").value);
             const exampleSentence = document.getElementById("form-example").value.trim();
             const exampleMeaning = document.getElementById("form-example-meaning").value.trim();
             const codeToSend = adminVerified ? adminCode : "";
@@ -1669,6 +1842,26 @@ important, 중요한, Adjective"></textarea>
             fetchRandomQuiz();
         }
 
+        function normalizePartOfSpeech(pos) {
+            const value = String(pos || "").trim();
+            const map = {
+                "Noun": "명사",
+                "noun": "명사",
+                "n": "명사",
+                "Verb": "동사",
+                "verb": "동사",
+                "v": "동사",
+                "Adjective": "형용사",
+                "adjective": "형용사",
+                "adj": "형용사",
+                "Adverb": "부사",
+                "adverb": "부사",
+                "adv": "부사"
+            };
+
+            return map[value] || value;
+        }
+
         function parseBulkLine(line) {
             let parts = [];
 
@@ -1684,7 +1877,7 @@ important, 중요한, Adjective"></textarea>
 
             const word = parts[0] || "";
             const meaning = parts[1] || "";
-            const partOfSpeech = parts[2] || "";
+            const partOfSpeech = normalizePartOfSpeech(parts[2] || "");
             const exampleSentence = parts[3] || "";
             const exampleMeaning = parts.slice(4).join(" ") || "";
 
